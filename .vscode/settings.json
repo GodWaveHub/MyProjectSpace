@@ -1,0 +1,36 @@
+{
+    // エディタのフォントサイズを14ピクセルに設定します（デフォルト: 14）
+    "editor.fontSize": 14,
+    // ビルド構成(pom.xmlやbuild.gradle)の変更を検出した際の動作を設定します（デフォルト: "interactive"）
+    // "interactive": ユーザーに更新するかどうかを尋ねます
+    "java.configuration.updateBuildConfiguration": "interactive",
+    // Javaコンパイル時のnull解析を無効にします（デフォルト: "disabled"）
+    "java.compile.nullAnalysis.mode": "disabled",
+
+    // --- GitHub Copilot Chat 設定 ---
+
+    // GitHub Copilot Chatがワークスペース内の指示ファイル(.github/copilot-instructions.md)を参照するかどうかを設定します。（デフォルト: false）
+    // true: 指示ファイルを参照します。プロジェクト固有のルールをCopilotに認識させるために推奨されます。
+    // false: 指示ファイルを参照しません。
+    "github.copilot.chat.codeGeneration.useInstructionFiles": true,
+
+    // (プレビュー機能) コード生成に代替プロバイダーを使用するかどうかを設定します。（デフォルト: false）
+    // true: 代替プロバイダーを使用します。
+    // false: デフォルトのプロバイダーを使用します。
+    // "github.copilot.chat.codeGeneration.useAlternateProvider": false,
+
+    // GitHub Copilot Chatでコード検索機能(@workspace)を有効にします。（デフォルト: false）
+    // true: @workspace を使用したワークスペース全体のコード検索と参照を有効にします。
+    // false: この機能を無効にします。
+    "github.copilot.chat.codesearch.enabled": true,
+
+    // GitHub Copilot Chatがツール(@terminalなど)を使用する際に、ユーザーの承認を自動的に行うかどうかを設定します。（デフォルト: false）
+    // true: ツール使用時に毎回承認を求めるプロンプトを表示せず、自動的に実行を承認します。開発フローがスムーズになりますが、意図しないコマンドが実行されるセキュリティリスクも伴います。
+    // false: ツールを使用するたびに、実行してよいかユーザーに承認を求めます。
+    "github.copilot.chat.tools.autoApprove": true,
+
+    "chat.instructionsFilesLocations": {
+        ".github/copilot-instructions.md": true,
+        ".github/instructions/**/*.instructions.md": true
+    }
+}

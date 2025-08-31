@@ -1,0 +1,26 @@
+{
+	"servers": {
+		"markitdown2": {
+			"command": "podman",
+			"args": [
+				"run",
+				"--rm",
+				"-i",
+				"-v",
+				".:/workdir",
+				"markitdown-mcp:latest"
+			]
+		},
+		"GeoMationApiSample": {
+			"command": "podman",
+			"args": [
+				"run",
+				"--rm",
+				"-i",
+				"-v",
+				".:/workdir",
+				"mcp-apidocs:latest"
+			]
+		}
+	}
+}
