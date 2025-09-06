@@ -32,5 +32,9 @@
     "chat.instructionsFilesLocations": {
         ".github/copilot-instructions.md": true,
         ".github/instructions/**/*.instructions.md": true
-    }
+    },
+
+    // エージェント モードでターンごとに Copilot の使用を許可する要求の最大数。
+    // 制限に達すると、Copilot はユーザーに続行するかどうかの確認を求めます。
+    "chat.agent.maxRequests": 30
 }
