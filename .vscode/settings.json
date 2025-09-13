@@ -6,35 +6,31 @@
     "java.configuration.updateBuildConfiguration": "interactive",
     // Javaコンパイル時のnull解析を無効にします（デフォルト: "disabled"）
     "java.compile.nullAnalysis.mode": "disabled",
-
     // --- GitHub Copilot Chat 設定 ---
-
-    // GitHub Copilot Chatがワークスペース内の指示ファイル(.github/copilot-instructions.md)を参照するかどうかを設定します。（デフォルト: false）
-    // true: 指示ファイルを参照します。プロジェクト固有のルールをCopilotに認識させるために推奨されます。
-    // false: 指示ファイルを参照しません。
-    "github.copilot.chat.codeGeneration.useInstructionFiles": true,
-
     // (プレビュー機能) コード生成に代替プロバイダーを使用するかどうかを設定します。（デフォルト: false）
     // true: 代替プロバイダーを使用します。
     // false: デフォルトのプロバイダーを使用します。
     // "github.copilot.chat.codeGeneration.useAlternateProvider": false,
-
     // GitHub Copilot Chatでコード検索機能(@workspace)を有効にします。（デフォルト: false）
     // true: @workspace を使用したワークスペース全体のコード検索と参照を有効にします。
     // false: この機能を無効にします。
     "github.copilot.chat.codesearch.enabled": true,
-
     // GitHub Copilot Chatがツール(@terminalなど)を使用する際に、ユーザーの承認を自動的に行うかどうかを設定します。（デフォルト: false）
     // true: ツール使用時に毎回承認を求めるプロンプトを表示せず、自動的に実行を承認します。開発フローがスムーズになりますが、意図しないコマンドが実行されるセキュリティリスクも伴います。
     // false: ツールを使用するたびに、実行してよいかユーザーに承認を求めます。
-    "github.copilot.chat.tools.autoApprove": true,
-
+    // "github.copilot.chat.tools.autoApprove": true, // (旧設定、非推奨)
+    "chat.tools.terminal.enableAutoApprove": true, // ターミナルツールの自動承認を有効にします。
+    "chat.tools.filesystem.enableAutoApprove": true, // ファイルシステムツールの自動承認を有効にします。
+    // "chat.tools.global.autoApprove": true, // (プレビュー機能) グローバルツールの自動承認を有効にします。
+    // GitHub Copilot Chatが指示ファイルを参照する場合の、指示ファイルの場所を設定します。（デフォルト: {".github/copilot-instructions.md": true}）
+    // キー: 指示ファイルのパス（ワークスペースルートからの相対パス、またはglobパターン）
+    // 値: 指示ファイルを参照する場合はtrue、参照しない場合はfalse
     "chat.instructionsFilesLocations": {
         ".github/copilot-instructions.md": true,
         ".github/instructions/**/*.instructions.md": true
     },
-
-    // エージェント モードでターンごとに Copilot の使用を許可する要求の最大数。
-    // 制限に達すると、Copilot はユーザーに続行するかどうかの確認を求めます。
-    "chat.agent.maxRequests": 30
+    // (プレビュー機能) エージェントが処理できる最大リクエスト数を設定します。デフォルトは30です。
+    "chat.agent.maxRequests": 30,
+    // エージェントセッションビューの表示位置を設定します。
+    "chat.agentSessionsViewLocation": "explorer", // "explorer": エクスプローラーサイドバーに表示します。"panel": パネルに表示します。   
 }
