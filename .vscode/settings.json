@@ -6,15 +6,19 @@
     "java.configuration.updateBuildConfiguration": "interactive",
     // Javaコンパイル時のnull解析を無効にします（デフォルト: "disabled"）
     "java.compile.nullAnalysis.mode": "disabled",
+
+    // --------------------------------
     // --- GitHub Copilot Chat 設定 ---
-    // (プレビュー機能) コード生成に代替プロバイダーを使用するかどうかを設定します。（デフォルト: false）
-    // true: 代替プロバイダーを使用します。
-    // false: デフォルトのプロバイダーを使用します。
-    // "github.copilot.chat.codeGeneration.useAlternateProvider": false,
+    // --------------------------------
+
     // GitHub Copilot Chatでコード検索機能(@workspace)を有効にします。（デフォルト: false）
     // true: @workspace を使用したワークスペース全体のコード検索と参照を有効にします。
     // false: この機能を無効にします。
     "github.copilot.chat.codesearch.enabled": true,
+    // GitHub Copilot Chatでコード検索機能(@workspace)が検索する最大ファイル数を設定します。（デフォルト: 50）
+    // 例えば、100に設定すると、@workspace はワークスペース内の最大100ファイルを検索します。
+    "github.copilot.chat.codesearch.maxFiles": 1000,
+    
     // GitHub Copilot Chatがツール(@terminalなど)を使用する際に、ユーザーの承認を自動的に行うかどうかを設定します。（デフォルト: false）
     // true: ツール使用時に毎回承認を求めるプロンプトを表示せず、自動的に実行を承認します。開発フローがスムーズになりますが、意図しないコマンドが実行されるセキュリティリスクも伴います。
     // false: ツールを使用するたびに、実行してよいかユーザーに承認を求めます。
