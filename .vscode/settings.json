@@ -7,10 +7,11 @@
     // Javaコンパイル時のnull解析を無効にします（デフォルト: "disabled"）
     "java.compile.nullAnalysis.mode": "disabled",
 
+
+    
     // --------------------------------
     // --- GitHub Copilot Chat 設定 ---
     // --------------------------------
-
     // GitHub Copilot Chatでコード検索機能(@workspace)を有効にします。（デフォルト: false）
     // true: @workspace を使用したワークスペース全体のコード検索と参照を有効にします。
     // false: この機能を無効にします。
@@ -18,7 +19,6 @@
     // GitHub Copilot Chatでコード検索機能(@workspace)が検索する最大ファイル数を設定します。（デフォルト: 50）
     // 例えば、100に設定すると、@workspace はワークスペース内の最大100ファイルを検索します。
     "github.copilot.chat.codesearch.maxFiles": 1000,
-    
     // GitHub Copilot Chatがツール(@terminalなど)を使用する際に、ユーザーの承認を自動的に行うかどうかを設定します。（デフォルト: false）
     // true: ツール使用時に毎回承認を求めるプロンプトを表示せず、自動的に実行を承認します。開発フローがスムーズになりますが、意図しないコマンドが実行されるセキュリティリスクも伴います。
     // false: ツールを使用するたびに、実行してよいかユーザーに承認を求めます。
@@ -36,5 +36,14 @@
     // (プレビュー機能) エージェントが処理できる最大リクエスト数を設定します。デフォルトは30です。
     "chat.agent.maxRequests": 30,
     // エージェントセッションビューの表示位置を設定します。
-    "chat.agentSessionsViewLocation": "explorer", // "explorer": エクスプローラーサイドバーに表示します。"panel": パネルに表示します。   
+    "chat.agentSessionsViewLocation": "explorer", // "explorer": エクスプローラーサイドバーに表示します。"panel": パネルに表示します。
+    // Copilot 次の編集提案有効
+    "github.copilot.nextEditSuggestions.enabled": true,
+    // ターミナルツールの自動承認設定
+    "chat.tools.terminal.autoApprove": {
+        "Get-ChildItem": true,
+        "git clone": true,
+        "python": true,
+        "Rename-Item": true
+    },
 }
