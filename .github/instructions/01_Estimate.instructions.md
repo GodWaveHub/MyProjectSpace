@@ -13,6 +13,6 @@ applyTo: "見積作成時のルール"
 - 見積は、チームの経験と過去のプロジェクトデータを参考にしてください。 
 - PARAMETER.mdの係数・生産性・単価を参照し 規模(LOC/FP)算出 → 工数換算 → コスト積算 を一貫管理  
 - 使用したパラメータ（人月単価・生産性・補正係数・稼働率等）を PARAMETER.md から引用し明記（表形式推奨）  
-- formats/estimate_template.md を利用
+- 80_formats/estimate_template.md を利用
 - 要求変更・前提条件変更時に再計算し版管理（例: v1.0 → v1.1）  
 - 見積項目と WBS タスクID を対応付け、差異分析を Progress にフィードバック  

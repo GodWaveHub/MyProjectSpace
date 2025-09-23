@@ -1,0 +1,14 @@
+/* Minimal print styles for Markdown HTML */
+@media print{
+  @page{ margin: 14mm; }
+  html, body{ background:#fff; color:#000; }
+  a{ color:#000; text-decoration: underline; }
+  main, .markdown-body, .content{ max-width: none; padding:0; }
+  pre, code{ background:#fff; border-color:#bbb; }
+  h1{ font-size: 18pt; }
+  h2{ font-size: 15pt; }
+  h3{ font-size: 13pt; }
+  h2{ border-bottom: 1px solid #bbb; padding-bottom: 0.2em; }
+  img, svg{ break-inside: avoid; page-break-inside: avoid; }
+  table{ break-inside: avoid; page-break-inside: avoid; }
+}

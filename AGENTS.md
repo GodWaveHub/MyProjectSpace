@@ -86,6 +86,10 @@
 - **格納ファイル例**: システムテスト仕様書、テストケース、テスト結果
 - **活用方法**: 結合テスト完了後の最終検証
 
+#### 99_html（html化ファイル）
+- 用途: Markdownや各種ドキュメントのHTML化成果物を管理し、レビュー・配布・公開に利用する
+- 格納ファイル例: index.html、各セクションのHTML、assets/css、assets/js、assets/img、sitemap.xml、print.css
+
 ## GitHub Copilot活用のポイント
 
 - 各フォルダのテンプレートファイルを活用して効率的な文書作成

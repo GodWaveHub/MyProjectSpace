@@ -44,6 +44,8 @@
         "Get-ChildItem": true,
         "git clone": true,
         "python": true,
-        "Rename-Item": true
+        "Rename-Item": true,
+        "print(markdown.__version__)\"": true,
+        "pip": true
     },
 }
