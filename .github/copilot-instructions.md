@@ -2,10 +2,6 @@
 
 - GitHub Copilot はrulesを必ず順守し、回答・提案を行ってください。
 
-## AGENTS
-- フォルダの意味はAGENTS.mdに記載されています。参照してください。
-- AGENTS.mdを参照した場合は、必ず「この回答はAGENTS.mdのルールに従っています。」とコメントしてください。
-
 ## rules
 - このファイルを参照した場合は、必ず「この回答はcopilot-instructionsのルールに従っています。」とコメントしてください。
 - 他のinstructionsを参照した場合は、必ず「この回答は{instructionsファイル名}のルールに従っています。」とコメントしてください。
