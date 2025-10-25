@@ -31,11 +31,3 @@ HTMLの<head>内で以下のようにlinkしてください。
 - アイコンフォントや外部CDNは使用していません。
 - 必要に応じて変数（:root内のCSSカスタムプロパティ）を調整してください。
 
-## 生成物インデックス（90_prompts）
-
-- [2025-09-20_1745_テーブル定義論理名対応.html](./90_prompts/2025-09-20_1745_テーブル定義論理名対応.html)
-- [2025-09-21_見直し_PostgreSQL対応.html](./90_prompts/2025-09-21_見直し_PostgreSQL対応.html)
-- [2025-09-22_0056_md_to_html_style.html](./90_prompts/2025-09-22_0056_md_to_html_style.html)
-- [2025-09-22_テーブル定義_html化.html](./90_prompts/2025-09-22_テーブル定義_html化.html)
-- [2025-09-23_90_prompts_html化実行ログ.html](./90_prompts/2025-09-23_90_prompts_html化実行ログ.html)
-- [2025-09-23_テーブル定義フォーマット更新.html](./90_prompts/2025-09-23_テーブル定義フォーマット更新.html)
