@@ -34,18 +34,15 @@
         ".github/instructions/**/*.instructions.md": true
     },
     // (プレビュー機能) エージェントが処理できる最大リクエスト数を設定します。デフォルトは30です。
-    "chat.agent.maxRequests": 30,
+    "chat.agent.maxRequests": 300,
     // エージェントセッションビューの表示位置を設定します。
     "chat.agentSessionsViewLocation": "explorer", // "explorer": エクスプローラーサイドバーに表示します。"panel": パネルに表示します。
     // Copilot 次の編集提案有効
     "github.copilot.nextEditSuggestions.enabled": true,
     // ターミナルツールの自動承認設定
     "chat.tools.terminal.autoApprove": {
-        "git add -A": true,
-        "git commit -m": true,
-        "git push origin Main": true,
+        "git": true,
         "Get-ChildItem": true,
-        "git clone": true,
         "python": true,
         "Rename-Item": true,
         "print(markdown.__version__)\"": true,

@@ -1,0 +1,105 @@
+■起動用コマンド
+
+・コマンドプロンプト
+copilot --log-dir ./logs ^
+        --resumes ^
+        --log-level debug ^
+        --add-dir . ^
+        --allow-tool 'shell(touch)'
+
+・ps
+copilot --log-dir ./logs `
+        --resume `
+        --log-level debug `
+        --add-dir . `
+        --allow-tool 'shell(touch)'
+copilot --log-dir ./logs `
+        --log-level debug `
+        --add-dir . `
+        --allow-all-tools
+
+■起動してから
+/xxxx  で個別コマンドを実行
+
+
+■プロンプトモードで起動（全コマンド許可としているので少し怖い）
+copilot -p "作業ディレクトリ直下に今日の日付をファイル名としたテキストファイルを作成してください。" `
+        --log-dir ./logs `
+        --log-level debug `
+        --add-dir . `
+        --allow-all-tools
+
+
+
+
+
+
+
+
+
+
+
+        
+
+
+
+# モデル指定
+$Env:COPILOT_MODEL = "gpt-5"
+echo $COPILOT_MODEL
+
+# スクリプト開始
+Write-Host "Copilot CLI を起動します..."
+
+# 作業ディレクトリを信頼する（初回のみ必要）
+
+# Copilot CLI にプロンプトを送信して、ファイル作成を指示
+copilot -p "テキストファイル zzz.txt を作成してください。"
+
+Write-Host "Copilot CLI の指示が完了しました。"
+
+
+
+
+copilot help
+copilot help config
+copilot help environment
+copilot help logging
+copilot help permissions
+
+copilot -p "aaaa1フォルダを作って" --allow-all-tools
+
+# Resume the latest session
+$ copilot --resume
+
+# Resume a specific session by ID
+$ copilot --resume session-id
+
+# Resume with auto-approval
+$ copilot --allow-all-tools --resume
+
+# Show the animated banner
+$ copilot --banner
+
+# Set logging to ./logs
+$ copilot --log-dir ./logs
+
+# Enable debug level logging
+$ copilot --log-level debug
+
+# Allow access to additional directory
+$ copilot --add-dir /home/user/projects
+
+# Allow multiple directories
+$ copilot --add-dir ~/workspace --add-dir /tmp
+
+# Allow touch commands
+$ copilot --allow-tool 'shell(touch)'
+
+# Deny git push commands
+$ copilot --deny-tool 'shell(git push)'
+
+# Allow all file editing
+$ copilot --allow-tool 'write'
+
+# Allow all but one specific tool from MCP server with name "MyMCP"
+$ copilot --deny-tool 'MyMCP(denied_tool)' --allow-tool 'MyMCP'
