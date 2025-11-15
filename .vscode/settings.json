@@ -41,6 +41,9 @@
     "github.copilot.nextEditSuggestions.enabled": true,
     // ターミナルツールの自動承認設定
     "chat.tools.terminal.autoApprove": {
+        "git add -A": true,
+        "git commit -m": true,
+        "git push origin Main": true,
         "Get-ChildItem": true,
         "git clone": true,
         "python": true,
