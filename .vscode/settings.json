@@ -46,7 +46,8 @@
         "Get-ChildItem": true,
         "python": true,
         "Rename-Item": true,
-        "print(markdown.__version__)\"": true,
-        "pip": true
+        "print": true,
+        "pip": true,
+        "/.+script.+/": true
     },
 }
