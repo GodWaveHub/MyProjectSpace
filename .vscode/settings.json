@@ -42,6 +42,7 @@
     // ターミナルツールの自動承認設定
     "chat.tools.terminal.autoApprove": {
         "git": true,
+        "npm": true,
         "Get-ChildItem": true,
         "python": true,
         "Rename-Item": true,
