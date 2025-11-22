@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>eslint.config.js - GIS Map Application 詳細設計書</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #212121; background-color: #fafafa; }
+        header { background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%); color: white; padding: 2rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        header h1 { font-size: 1.8rem; font-weight: 500; margin-bottom: 0.5rem; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+        .back-button { display: inline-block; margin-bottom: 1rem; padding: 0.5rem 1rem; background-color: #1976d2; color: white; text-decoration: none; border-radius: 4px; }
+        .back-button:hover { background-color: #1565c0; }
+        section { background: white; margin-bottom: 2rem; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h2 { color: #1976d2; font-size: 1.5rem; font-weight: 500; margin-bottom: 1.5rem; padding-bottom: 0.5rem; border-bottom: 2px solid #e3f2fd; }
+        h3 { color: #424242; font-size: 1.2rem; font-weight: 500; margin-top: 1.5rem; margin-bottom: 1rem; }
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        th { background-color: #e3f2fd; color: #1565c0; font-weight: 500; padding: 0.75rem; text-align: left; border: 1px solid #bbdefb; }
+        td { padding: 0.75rem; border: 1px solid #e0e0e0; vertical-align: top; }
+        tr:hover { background-color: #f5f5f5; }
+        ul { margin-left: 2rem; margin-top: 0.5rem; }
+        li { margin-bottom: 0.5rem; }
+        code { background-color: #f5f5f5; padding: 0.2rem 0.4rem; border-radius: 3px; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>eslint.config.js - 詳細設計</h1>
+        </div>
+    </header>
+    
+    <div class="container">
+        <a href="index.html" class="back-button">← トップページへ戻る</a>
+        
+        <section>
+            <h2>1. ファイル概要</h2>
+            <table>
+                <tr><th style="width: 200px;">ファイル名</th><td>eslint.config.js</td></tr>
+                <tr><th>役割</th><td>ESLintコード品質チェックツールの設定ファイル（Flat Config形式）</td></tr>
+            </table>
+        </section>
+        
+        <section>
+            <h2>2. 設定項目</h2>
+            
+            <h3>2.1 グローバル無視設定</h3>
+            <table>
+                <thead>
+                    <tr><th>項目名</th><th>値</th><th>概要</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>globalIgnores</td><td>['dist']</td><td>ビルド出力ディレクトリをLint対象から除外</td></tr>
+                </tbody>
+            </table>
+            
+            <h3>2.2 対象ファイル</h3>
+            <table>
+                <thead>
+                    <tr><th>項目名</th><th>値</th><th>概要</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>files</td><td>**/*.{ts,tsx}</td><td>TypeScript/TSXファイルを対象</td></tr>
+                </tbody>
+            </table>
+            
+            <h3>2.3 拡張設定</h3>
+            <table>
+                <thead>
+                    <tr><th>設定名</th><th>概要</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>js.configs.recommended</td><td>ESLint推奨のJavaScript基本ルール</td></tr>
+                    <tr><td>tseslint.configs.recommended</td><td>TypeScript用の推奨ルール</td></tr>
+                    <tr><td>reactHooks.configs.flat.recommended</td><td>React Hooks の正しい使用方法を強制</td></tr>
+                    <tr><td>reactRefresh.configs.vite</td><td>Vite + React Fast Refresh 対応ルール</td></tr>
+                </tbody>
+            </table>
+            
+            <h3>2.4 言語オプション</h3>
+            <table>
+                <thead>
+                    <tr><th>項目名</th><th>値</th><th>概要</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>ecmaVersion</td><td>2020</td><td>対応するECMAScriptバージョン</td></tr>
+                    <tr><td>globals</td><td>globals.browser</td><td>ブラウザ環境のグローバル変数（window, document等）を認識</td></tr>
+                </tbody>
+            </table>
+        </section>
+        
+        <section>
+            <h2>3. 主要な検出項目</h2>
+            <p>この設定により以下の項目が自動的にチェックされます:</p>
+            <ul>
+                <li><strong>JavaScript基本:</strong> 未定義変数、到達不能なコード、不要なセミコロン等</li>
+                <li><strong>TypeScript:</strong> any型の多用、型アサーションの誤用、型定義の不足等</li>
+                <li><strong>React Hooks:</strong> useEffect依存配列の不足、Hooksの呼び出し順序違反等</li>
+                <li><strong>React Refresh:</strong> Fast Refreshが正しく動作しないエクスポート形式の検出</li>
+            </ul>
+        </section>
+        
+        <section>
+            <h2>4. 備考</h2>
+            <p>ESLint 9.x のFlat Config形式を採用しており、従来の<code>.eslintrc</code>形式より明確で拡張性の高い設定構造を実現しています。</p>
+        </section>
+        
+        <a href="index.html" class="back-button">← トップページへ戻る</a>
+    </div>
+</body>
+</html>

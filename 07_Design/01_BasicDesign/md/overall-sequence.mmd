@@ -1,0 +1,40 @@
+sequenceDiagram
+    actor ユーザー
+    participant ブラウザ
+    participant React App
+    participant Google Maps API
+    participant ファイルシステム
+
+    ユーザー->>ブラウザ: アプリケーションアクセス
+    ブラウザ->>React App: index.html読み込み
+    React App->>React App: 初期化
+    React App->>Google Maps API: API初期化・地図読み込み
+    Google Maps API-->>React App: 地図準備完了
+    React App-->>ブラウザ: UI表示
+    ブラウザ-->>ユーザー: 地図表示
+
+    loop レイヤー操作
+        ユーザー->>React App: レイヤー追加・編集・削除
+        React App->>React App: 状態更新
+        React App->>Google Maps API: Data Layer更新
+        Google Maps API-->>ブラウザ: 地図再描画
+    end
+
+    loop 図形作図
+        ユーザー->>Google Maps API: 図形作図
+        Google Maps API->>React App: 図形完成イベント
+        React App->>React App: GeoJSON変換
+        React App->>React App: レイヤーに追加
+        React App->>Google Maps API: Data Layer更新
+    end
+
+    ユーザー->>React App: GeoJSON保存
+    React App->>ファイルシステム: ファイルダウンロード
+    ファイルシステム-->>ユーザー: ファイル保存完了
+
+    ユーザー->>React App: GeoJSON読み込み
+    ユーザー->>ファイルシステム: ファイル選択
+    ファイルシステム->>React App: ファイル読み込み
+    React App->>React App: パース・バリデーション
+    React App->>Google Maps API: Data Layer更新
+    Google Maps API-->>ブラウザ: 地図更新

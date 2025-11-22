@@ -1,0 +1,25 @@
+classDiagram
+    class geojsonUtils {
+        <<utility>>
+        +convertOverlayToFeature(event: OverlayCompleteEvent) Feature | null
+        +normalizeGeoJson(raw: unknown) Feature | Feature[] | null
+    }
+
+    class PrivateFunctions {
+        <<internal>>
+        -createFeatureId() string
+        -pathToLinearRing(path: MVCArray~LatLng~) Position[]
+        -circleToPolygon(circle: Circle, segments: number) Position[][]
+        -rectangleToPolygon(rectangle: Rectangle) Position[][]
+        -polylineToCoordinates(polyline: Polyline) Position[]
+        -polygonToCoordinates(polygon: Polygon) Position[][]
+    }
+
+    class Constants {
+        <<const>>
+        +EARTH_RADIUS_IN_METERS: 6378137
+    }
+
+    geojsonUtils --> PrivateFunctions : uses
+    geojsonUtils --> Constants : uses
+    geojsonUtils --> Feature : returns

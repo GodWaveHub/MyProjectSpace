@@ -1,0 +1,41 @@
+sequenceDiagram
+    actor User
+    participant App
+    participant MapCanvas
+    participant LayerPanel
+    participant GoogleMaps as Google Maps API
+    participant geojsonUtils
+
+    User->>App: アプリケーション起動
+    App->>MapCanvas: レンダリング
+    MapCanvas->>GoogleMaps: API初期化・地図読み込み
+    GoogleMaps-->>MapCanvas: 地図準備完了
+    MapCanvas->>MapCanvas: attachDataLayerInteractions()
+    MapCanvas->>MapCanvas: initializeDrawingManager()
+    MapCanvas->>MapCanvas: rebuildMapLayers()
+    MapCanvas->>LayerPanel: レイヤー一覧表示
+
+    User->>MapCanvas: 図形を作図
+    MapCanvas->>GoogleMaps: Drawing Manager で作図
+    GoogleMaps-->>MapCanvas: overlaycomplete イベント
+    MapCanvas->>geojsonUtils: convertOverlayToFeature()
+    geojsonUtils-->>MapCanvas: Feature
+    MapCanvas->>MapCanvas: レイヤーに追加
+    MapCanvas->>MapCanvas: rebuildMapLayers()
+    MapCanvas-->>User: 地図更新
+
+    User->>LayerPanel: レイヤー切替
+    LayerPanel->>MapCanvas: onSelectLayer()
+    MapCanvas->>MapCanvas: setActiveLayerId()
+    MapCanvas-->>User: アクティブレイヤー変更
+
+    User->>MapCanvas: GeoJSON保存
+    MapCanvas->>MapCanvas: handleSaveGeoJson()
+    MapCanvas-->>User: ファイルダウンロード
+
+    User->>MapCanvas: GeoJSON読込
+    MapCanvas->>geojsonUtils: normalizeGeoJson()
+    geojsonUtils-->>MapCanvas: Feature[]
+    MapCanvas->>MapCanvas: レイヤーに追加
+    MapCanvas->>MapCanvas: rebuildMapLayers()
+    MapCanvas-->>User: 地図更新

@@ -1,0 +1,47 @@
+flowchart TD
+    Start([アプリケーション起動]) --> Init[React初期化]
+    Init --> LoadAPI[Google Maps API読み込み]
+    LoadAPI --> |成功| MapReady[地図準備完了]
+    LoadAPI --> |失敗| Error[エラーメッセージ表示]
+    
+    MapReady --> Idle{ユーザー操作待機}
+    
+    Idle --> |レイヤー追加| AddLayer[新規レイヤー作成]
+    AddLayer --> UpdateState[状態更新]
+    UpdateState --> Rebuild[地図レイヤー再構築]
+    Rebuild --> Idle
+    
+    Idle --> |図形作図| Drawing[Drawing Manager起動]
+    Drawing --> Complete[図形完成]
+    Complete --> Convert[GeoJSON変換]
+    Convert --> |成功| AddFeature[レイヤーに追加]
+    Convert --> |失敗| ErrorMsg[エラー表示]
+    AddFeature --> UpdateState
+    ErrorMsg --> Idle
+    
+    Idle --> |GeoJSON保存| ExportGeoJSON[FeatureCollection生成]
+    ExportGeoJSON --> Download[ファイルダウンロード]
+    Download --> Idle
+    
+    Idle --> |GeoJSON読込| SelectFile[ファイル選択]
+    SelectFile --> Parse[JSON パース]
+    Parse --> |成功| Validate[GeoJSON検証]
+    Parse --> |失敗| ErrorMsg
+    Validate --> |有効| Import[レイヤーに追加]
+    Validate --> |無効| ErrorMsg
+    Import --> UpdateState
+    
+    Idle --> |レイヤー一覧保存| ExportLayers[LayerCollectionFile生成]
+    ExportLayers --> Download
+    
+    Idle --> |レイヤー一覧読込| SelectFile2[ファイル選択]
+    SelectFile2 --> ParseLayers[JSON パース]
+    ParseLayers --> |成功| RestoreLayers[レイヤー復元]
+    ParseLayers --> |失敗| ErrorMsg
+    RestoreLayers --> UpdateState
+
+    style Start fill:#e3f2fd
+    style MapReady fill:#c8e6c9
+    style Error fill:#ffcdd2
+    style ErrorMsg fill:#ffcdd2
+    style Idle fill:#fff9c4

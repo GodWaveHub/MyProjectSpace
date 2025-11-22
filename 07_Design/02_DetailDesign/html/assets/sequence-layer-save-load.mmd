@@ -1,0 +1,40 @@
+sequenceDiagram
+    actor User
+    participant LayerPanel
+    participant MapCanvas
+
+    User->>LayerPanel: レイヤー一覧を保存ボタンクリック
+    LayerPanel->>MapCanvas: onSaveLayerList()
+    MapCanvas->>MapCanvas: handleSaveLayerList()
+    
+    alt レイヤーが存在
+        MapCanvas->>MapCanvas: LayerCollectionFile オブジェクト作成
+        Note over MapCanvas: version, exportedAt, layers を含む
+        MapCanvas->>MapCanvas: JSON.stringify()
+        MapCanvas->>MapCanvas: Blob 作成
+        MapCanvas->>MapCanvas: URL.createObjectURL()
+        MapCanvas->>MapCanvas: <a> タグでダウンロード実行
+        MapCanvas->>MapCanvas: URL.revokeObjectURL()
+        MapCanvas-->>User: ファイルダウンロード成功
+    else レイヤーが空
+        MapCanvas-->>User: 情報: 保存対象なし
+    end
+
+    User->>LayerPanel: レイヤー一覧を読み込みボタンクリック
+    LayerPanel->>LayerPanel: triggerLayerImport()
+    LayerPanel->>LayerPanel: input.click()
+    User->>LayerPanel: ファイル選択
+    LayerPanel->>MapCanvas: onLoadLayerList(file)
+    MapCanvas->>MapCanvas: handleLoadLayerList()
+    MapCanvas->>MapCanvas: FileReader.readAsText()
+    
+    alt 読み込み成功
+        MapCanvas->>MapCanvas: JSON.parse()
+        MapCanvas->>MapCanvas: LayerCollectionFile バリデーション
+        MapCanvas->>MapCanvas: Layer[] 復元
+        MapCanvas->>MapCanvas: setLayers()
+        MapCanvas->>MapCanvas: setActiveLayerId()
+        MapCanvas-->>User: 成功: N件読み込み
+    else 読み込み失敗
+        MapCanvas-->>User: エラーメッセージ
+    end

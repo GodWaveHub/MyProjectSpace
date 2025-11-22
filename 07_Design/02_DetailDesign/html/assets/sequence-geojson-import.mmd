@@ -1,0 +1,39 @@
+sequenceDiagram
+    actor User
+    participant MapCanvas
+    participant FileReader
+    participant geojsonUtils
+
+    User->>MapCanvas: GeoJSONファイルを選択
+    MapCanvas->>MapCanvas: handleFileChange()
+    MapCanvas->>FileReader: ファイル読み込み開始
+    FileReader->>FileReader: readAsText(file)
+    FileReader-->>MapCanvas: onload イベント
+    
+    MapCanvas->>MapCanvas: JSON.parse(text)
+    
+    alt パース成功
+        MapCanvas->>geojsonUtils: normalizeGeoJson(parsed)
+        
+        alt FeatureCollection形式
+            geojsonUtils->>geojsonUtils: collection.features 抽出
+            geojsonUtils-->>MapCanvas: Feature[]
+        else Feature形式
+            geojsonUtils-->>MapCanvas: Feature (単一)
+        else 配列形式
+            geojsonUtils-->>MapCanvas: Feature[]
+        else 不正な形式
+            geojsonUtils-->>MapCanvas: null
+            MapCanvas-->>User: エラー: GeoJSON形式ではありません
+        end
+        
+        MapCanvas->>MapCanvas: アクティブレイヤーに追加
+        MapCanvas->>MapCanvas: setLayers()
+        MapCanvas->>MapCanvas: rebuildMapLayers()
+        MapCanvas-->>User: 成功メッセージ: N件追加
+    else パース失敗
+        MapCanvas-->>User: エラーメッセージ表示
+    end
+    
+    MapCanvas->>MapCanvas: input.value = ''
+    Note over MapCanvas: 同じファイルの再選択を可能に

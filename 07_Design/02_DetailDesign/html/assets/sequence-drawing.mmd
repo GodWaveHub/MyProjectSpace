@@ -1,0 +1,28 @@
+sequenceDiagram
+    actor User
+    participant MapCanvas
+    participant DrawingManager as Google Drawing Manager
+    participant geojsonUtils
+
+    User->>MapCanvas: 図形作図開始
+    MapCanvas->>DrawingManager: 作図モード有効化
+    User->>DrawingManager: マーカー/ポリゴン/円等を作図
+    DrawingManager->>MapCanvas: overlaycomplete イベント発火
+    MapCanvas->>MapCanvas: handleOverlayComplete()
+    MapCanvas->>geojsonUtils: convertOverlayToFeature(event)
+    
+    alt 有効な図形
+        geojsonUtils->>geojsonUtils: 図形タイプを判定
+        geojsonUtils->>geojsonUtils: 座標変換処理
+        geojsonUtils-->>MapCanvas: Feature オブジェクト
+        MapCanvas->>MapCanvas: アクティブレイヤーに追加
+        MapCanvas->>MapCanvas: setLayers()
+        MapCanvas->>MapCanvas: rebuildMapLayers()
+        MapCanvas-->>User: 成功メッセージ表示
+    else 無効な図形
+        geojsonUtils-->>MapCanvas: null
+        MapCanvas-->>User: エラーメッセージ表示
+    end
+    
+    MapCanvas->>DrawingManager: overlay.setMap(null)
+    Note over MapCanvas,DrawingManager: 一時的な図形を削除

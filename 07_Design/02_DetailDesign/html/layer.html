@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>layer.ts - GIS Map Application 詳細設計書</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #212121; background-color: #fafafa; }
+        header { background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%); color: white; padding: 2rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        header h1 { font-size: 1.8rem; font-weight: 500; margin-bottom: 0.5rem; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+        .back-button { display: inline-block; margin-bottom: 1rem; padding: 0.5rem 1rem; background-color: #1976d2; color: white; text-decoration: none; border-radius: 4px; }
+        .back-button:hover { background-color: #1565c0; }
+        section { background: white; margin-bottom: 2rem; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h2 { color: #1976d2; font-size: 1.5rem; font-weight: 500; margin-bottom: 1.5rem; padding-bottom: 0.5rem; border-bottom: 2px solid #e3f2fd; }
+        h3 { color: #424242; font-size: 1.2rem; font-weight: 500; margin-top: 1.5rem; margin-bottom: 1rem; }
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        th { background-color: #e3f2fd; color: #1565c0; font-weight: 500; padding: 0.75rem; text-align: left; border: 1px solid #bbdefb; }
+        td { padding: 0.75rem; border: 1px solid #e0e0e0; vertical-align: top; }
+        tr:hover { background-color: #f5f5f5; }
+        code { background-color: #f5f5f5; padding: 0.2rem 0.4rem; border-radius: 3px; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.9rem; }
+        .diagram { margin: 2rem 0; text-align: center; padding: 1rem; background-color: #fafafa; border-radius: 8px; }
+        .diagram img { max-width: 100%; height: auto; border: 1px solid #e0e0e0; border-radius: 4px; }
+        .diagram-caption { margin-top: 1rem; font-size: 0.9rem; color: #616161; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>layer.ts - 詳細設計</h1>
+        </div>
+    </header>
+    
+    <div class="container">
+        <a href="index.html" class="back-button">← トップページへ戻る</a>
+        
+        <section>
+            <h2>1. ファイル概要</h2>
+            <table>
+                <tr><th style="width: 200px;">ファイル名</th><td>layer.ts</td></tr>
+                <tr><th>パッケージ</th><td>src/types/</td></tr>
+                <tr><th>役割</th><td>レイヤーとレイヤースタイルの型定義、レイヤー一覧ファイル形式の定義</td></tr>
+                <tr><th>依存関係</th><td><ul><li>geojson型 (Feature)</li></ul></td></tr>
+            </table>
+        </section>
+        
+        <section>
+            <h2>2. 型定義</h2>
+            
+            <h3>2.1 LayerStyle</h3>
+            <p>レイヤーの視覚スタイルを定義する型</p>
+            <table>
+                <thead>
+                    <tr><th>プロパティ名</th><th>型</th><th>説明</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>strokeColor</td><td>string</td><td>図形の線の色（例: '#0f60ff'）</td></tr>
+                    <tr><td>fillColor</td><td>string</td><td>図形の塗りつぶし色（例: '#38bdf8'）</td></tr>
+                    <tr><td>fillOpacity</td><td>number</td><td>塗りつぶしの不透明度（0.0 ～ 1.0）</td></tr>
+                </tbody>
+            </table>
+            
+            <h3>2.2 Layer</h3>
+            <p>レイヤーの完全な定義型</p>
+            <table>
+                <thead>
+                    <tr><th>プロパティ名</th><th>型</th><th>説明</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>id</td><td>string</td><td>レイヤーの一意識別子（UUID等）</td></tr>
+                    <tr><td>name</td><td>string</td><td>レイヤーの表示名</td></tr>
+                    <tr><td>visible</td><td>boolean</td><td>レイヤーの可視状態（true: 表示, false: 非表示）</td></tr>
+                    <tr><td>style</td><td>LayerStyle</td><td>レイヤーのスタイル設定</td></tr>
+                    <tr><td>features</td><td>Feature[]</td><td>レイヤーに含まれるGeoJSONフィーチャの配列</td></tr>
+                </tbody>
+            </table>
+            
+            <h3>2.3 LayerCollectionFile</h3>
+            <p>レイヤー一覧をファイル保存・読み込みする際のJSON形式</p>
+            <table>
+                <thead>
+                    <tr><th>プロパティ名</th><th>型</th><th>説明</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>version</td><td>'1.0'</td><td>ファイル形式のバージョン（固定値: '1.0'）</td></tr>
+                    <tr><td>exportedAt</td><td>string</td><td>エクスポート日時（ISO 8601形式）</td></tr>
+                    <tr><td>layers</td><td>Array&lt;Layer&gt;</td><td>レイヤーの配列</td></tr>
+                </tbody>
+            </table>
+        </section>
+        
+        <section>
+            <h2>3. 入出力仕様</h2>
+            <p>この型定義ファイル自体は実行時の入出力を持ちませんが、以下の用途で使用されます:</p>
+            <ul>
+                <li><strong>JSONシリアライズ:</strong> LayerCollectionFile形式でファイル保存</li>
+                <li><strong>JSONデシリアライズ:</strong> LayerCollectionFile形式のファイルを読み込み、Layer[]に復元</li>
+                <li><strong>型安全性:</strong> TypeScriptコンパイラによるコンパイル時の型チェック</li>
+            </ul>
+        </section>
+        
+        <section>
+            <h2>4. クラス図</h2>
+            <div class="diagram">
+                <img src="assets/class-Layer.svg" alt="Layer型定義クラス図">
+                <div class="diagram-caption">図: Layer関連の型定義構造</div>
+            </div>
+        </section>
+        
+        <section>
+            <h2>5. 備考</h2>
+            <ul>
+                <li>LayerCollectionFileのversionは将来の形式変更に備えたバージョン管理用</li>
+                <li>exportedAtはファイルの作成日時を記録し、トレーサビリティを確保</li>
+                <li>Featureは@types/geojsonパッケージの標準GeoJSON Feature型を使用</li>
+            </ul>
+        </section>
+        
+        <a href="index.html" class="back-button">← トップページへ戻る</a>
+    </div>
+</body>
+</html>

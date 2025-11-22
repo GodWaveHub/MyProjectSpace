@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>package.json - GIS Map Application 詳細設計書</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #212121; background-color: #fafafa; }
+        header { background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%); color: white; padding: 2rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        header h1 { font-size: 1.8rem; font-weight: 500; margin-bottom: 0.5rem; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+        .back-button { display: inline-block; margin-bottom: 1rem; padding: 0.5rem 1rem; background-color: #1976d2; color: white; text-decoration: none; border-radius: 4px; }
+        .back-button:hover { background-color: #1565c0; }
+        section { background: white; margin-bottom: 2rem; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h2 { color: #1976d2; font-size: 1.5rem; font-weight: 500; margin-bottom: 1.5rem; padding-bottom: 0.5rem; border-bottom: 2px solid #e3f2fd; }
+        h3 { color: #424242; font-size: 1.2rem; font-weight: 500; margin-top: 1.5rem; margin-bottom: 1rem; }
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        th { background-color: #e3f2fd; color: #1565c0; font-weight: 500; padding: 0.75rem; text-align: left; border: 1px solid #bbdefb; }
+        td { padding: 0.75rem; border: 1px solid #e0e0e0; vertical-align: top; }
+        tr:hover { background-color: #f5f5f5; }
+        code { background-color: #f5f5f5; padding: 0.2rem 0.4rem; border-radius: 3px; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>package.json - 詳細設計</h1>
+        </div>
+    </header>
+    
+    <div class="container">
+        <a href="index.html" class="back-button">← トップページへ戻る</a>
+        
+        <section>
+            <h2>1. ファイル概要</h2>
+            <table>
+                <tr><th style="width: 200px;">ファイル名</th><td>package.json</td></tr>
+                <tr><th>役割</th><td>Node.jsプロジェクトの設定ファイル。依存関係・スクリプト・メタデータを定義</td></tr>
+            </table>
+        </section>
+        
+        <section>
+            <h2>2. プロジェクト設定</h2>
+            <table>
+                <thead>
+                    <tr><th>項目名</th><th>値</th><th>概要</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>name</td><td>gis-map-app</td><td>プロジェクト名</td></tr>
+                    <tr><td>version</td><td>0.0.0</td><td>バージョン番号（開発中）</td></tr>
+                    <tr><td>private</td><td>true</td><td>npm公開を禁止</td></tr>
+                    <tr><td>type</td><td>module</td><td>ESモジュール形式を使用</td></tr>
+                </tbody>
+            </table>
+        </section>
+        
+        <section>
+            <h2>3. スクリプト</h2>
+            <table>
+                <thead>
+                    <tr><th>スクリプト名</th><th>コマンド</th><th>概要</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>dev</td><td>vite</td><td>開発サーバーを起動（ホットリロード有効）</td></tr>
+                    <tr><td>build</td><td>tsc -b && vite build</td><td>TypeScriptをコンパイルし、本番用ビルドを生成</td></tr>
+                    <tr><td>lint</td><td>eslint .</td><td>ESLintでコード品質チェックを実行</td></tr>
+                    <tr><td>preview</td><td>vite preview</td><td>ビルド済みアプリケーションをプレビュー</td></tr>
+                </tbody>
+            </table>
+        </section>
+        
+        <section>
+            <h2>4. 依存関係（dependencies）</h2>
+            <table>
+                <thead>
+                    <tr><th>パッケージ名</th><th>バージョン</th><th>概要</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>@googlemaps/js-api-loader</td><td>^2.0.2</td><td>Google Maps JavaScript API の動的ローダー</td></tr>
+                    <tr><td>react</td><td>^19.2.0</td><td>Reactライブラリ本体</td></tr>
+                    <tr><td>react-dom</td><td>^19.2.0</td><td>React DOM レンダリングライブラリ</td></tr>
+                </tbody>
+            </table>
+        </section>
+        
+        <section>
+            <h2>5. 開発依存関係（devDependencies）</h2>
+            <table>
+                <thead>
+                    <tr><th>パッケージ名</th><th>バージョン</th><th>概要</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>@eslint/js</td><td>^9.39.1</td><td>ESLint JavaScript設定</td></tr>
+                    <tr><td>@types/geojson</td><td>^7946.0.16</td><td>GeoJSON形式の型定義</td></tr>
+                    <tr><td>@types/google.maps</td><td>^3.58.1</td><td>Google Maps API の型定義</td></tr>
+                    <tr><td>@types/node</td><td>^24.10.1</td><td>Node.js APIの型定義</td></tr>
+                    <tr><td>@types/react</td><td>^19.2.5</td><td>React の型定義</td></tr>
+                    <tr><td>@types/react-dom</td><td>^19.2.3</td><td>React DOM の型定義</td></tr>
+                    <tr><td>@vitejs/plugin-react</td><td>^5.1.1</td><td>Vite用Reactプラグイン</td></tr>
+                    <tr><td>eslint</td><td>^9.39.1</td><td>JavaScript/TypeScript リンター</td></tr>
+                    <tr><td>eslint-plugin-react-hooks</td><td>^7.0.1</td><td>React Hooks ルール</td></tr>
+                    <tr><td>eslint-plugin-react-refresh</td><td>^0.4.24</td><td>React Fast Refresh対応</td></tr>
+                    <tr><td>globals</td><td>^16.5.0</td><td>グローバル変数の型定義</td></tr>
+                    <tr><td>typescript</td><td>~5.9.3</td><td>TypeScriptコンパイラ</td></tr>
+                    <tr><td>typescript-eslint</td><td>^8.46.4</td><td>TypeScript用ESLintプラグイン</td></tr>
+                    <tr><td>vite</td><td>npm:rolldown-vite@7.2.5</td><td>高速ビルドツール（Rolldown版）</td></tr>
+                </tbody>
+            </table>
+        </section>
+        
+        <section>
+            <h2>6. オーバーライド設定</h2>
+            <table>
+                <thead>
+                    <tr><th>パッケージ名</th><th>オーバーライド値</th><th>概要</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>vite</td><td>npm:rolldown-vite@7.2.5</td><td>標準ViteをRolldown版に置き換え（高速化）</td></tr>
+                </tbody>
+            </table>
+        </section>
+        
+        <a href="index.html" class="back-button">← トップページへ戻る</a>
+    </div>
+</body>
+</html>

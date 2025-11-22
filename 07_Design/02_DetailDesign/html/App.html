@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>App.tsx - GIS Map Application 詳細設計書</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #212121; background-color: #fafafa; }
+        header { background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%); color: white; padding: 2rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        header h1 { font-size: 1.8rem; font-weight: 500; margin-bottom: 0.5rem; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+        .back-button { display: inline-block; margin-bottom: 1rem; padding: 0.5rem 1rem; background-color: #1976d2; color: white; text-decoration: none; border-radius: 4px; }
+        .back-button:hover { background-color: #1565c0; }
+        section { background: white; margin-bottom: 2rem; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h2 { color: #1976d2; font-size: 1.5rem; font-weight: 500; margin-bottom: 1.5rem; padding-bottom: 0.5rem; border-bottom: 2px solid #e3f2fd; }
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        th { background-color: #e3f2fd; color: #1565c0; font-weight: 500; padding: 0.75rem; text-align: left; border: 1px solid #bbdefb; }
+        td { padding: 0.75rem; border: 1px solid #e0e0e0; vertical-align: top; }
+        tr:hover { background-color: #f5f5f5; }
+        code { background-color: #f5f5f5; padding: 0.2rem 0.4rem; border-radius: 3px; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.9rem; }
+        ul { margin-left: 2rem; margin-top: 0.5rem; }
+        li { margin-bottom: 0.5rem; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>App.tsx - 詳細設計</h1>
+        </div>
+    </header>
+    
+    <div class="container">
+        <a href="index.html" class="back-button">← トップページへ戻る</a>
+        
+        <section>
+            <h2>1. ファイル概要</h2>
+            <table>
+                <tr><th style="width: 200px;">ファイル名</th><td>App.tsx</td></tr>
+                <tr><th>パッケージ</th><td>src/</td></tr>
+                <tr><th>役割</th><td>アプリケーションのルートコンポーネント</td></tr>
+                <tr><th>依存関係</th><td><ul><li>App.css（スタイルシート）</li><li>components/MapCanvas（メインコンポーネント）</li></ul></td></tr>
+            </table>
+        </section>
+        
+        <section>
+            <h2>2. 処理詳細</h2>
+            <ul>
+                <li>アプリケーション全体を包含する最上位のReactコンポーネント</li>
+                <li><code>fullscreen-app</code>クラスのdivで全画面レイアウトを提供</li>
+                <li>MapCanvasコンポーネントをレンダリング</li>
+            </ul>
+        </section>
+        
+        <section>
+            <h2>3. 入出力仕様</h2>
+            <h3>3.1 入力</h3>
+            <p>なし（Propsを受け取らない）</p>
+            
+            <h3>3.2 出力</h3>
+            <table>
+                <thead>
+                    <tr><th>項目</th><th>型</th><th>説明</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>戻り値</td><td>ReactElement</td><td>MapCanvasを含むJSX要素</td></tr>
+                </tbody>
+            </table>
+        </section>
+        
+        <section>
+            <h2>4. 例外・バリデーション仕様</h2>
+            <p>このコンポーネントは単純なラッパーであり、独自の例外処理やバリデーションは行いません。</p>
+        </section>
+        
+        <section>
+            <h2>5. 備考</h2>
+            <p>シンプルな構造を保つことで、将来的にルーティングや認証機能を追加する際の拡張性を確保しています。</p>
+        </section>
+        
+        <a href="index.html" class="back-button">← トップページへ戻る</a>
+    </div>
+</body>
+</html>

@@ -1,0 +1,42 @@
+classDiagram
+    class MapCanvas {
+        -containerRef: RefObject~HTMLDivElement~
+        -geoJsonFileInputRef: RefObject~HTMLInputElement~
+        -mapRef: RefObject~google.maps.Map~
+        -drawingManagerRef: RefObject~google.maps.drawing.DrawingManager~
+        -infoWindowRef: RefObject~google.maps.InfoWindow~
+        -dataLayerListenersRef: RefObject~google.maps.MapsEventListener[]~
+        -layersRef: RefObject~Layer[]~
+        -layers: Layer[]
+        -activeLayerId: string | null
+        -status: Status
+        -apiKey: string
+        +render() ReactElement
+        -detachDataLayerListeners() void
+        -clearDataLayer() void
+        -rebuildMapLayers(targetLayers: Layer[]) void
+        -loadSampleLayers() void
+        -attachDataLayerInteractions() void
+        -handleOverlayComplete(event: OverlayCompleteEvent) void
+        -initializeDrawingManager() void
+        -handleSaveGeoJson() void
+        -handleFileChange(event: ChangeEvent) void
+        -handleClearLayer() void
+        -handleAddLayer(name: string) void
+        -handleDeleteLayer(layerId: string) void
+        -handleToggleLayer(layerId: string) void
+        -handleUpdateLayer(layerId: string, updates: object) void
+        -handleSaveLayerList() void
+        -handleLoadLayerList(file: File) void
+        -handleSelectLayer(layerId: string) void
+        -triggerGeoJsonDialog() void
+    }
+
+    class Status {
+        +type: "info" | "success" | "error"
+        +message: string
+    }
+
+    MapCanvas --> Status : uses
+    MapCanvas --> Layer : manages
+    MapCanvas --> LayerPanel : renders

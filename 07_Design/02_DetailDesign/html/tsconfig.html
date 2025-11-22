@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>tsconfig.json - GIS Map Application 詳細設計書</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #212121; background-color: #fafafa; }
+        header { background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%); color: white; padding: 2rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        header h1 { font-size: 1.8rem; font-weight: 500; margin-bottom: 0.5rem; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+        .back-button { display: inline-block; margin-bottom: 1rem; padding: 0.5rem 1rem; background-color: #1976d2; color: white; text-decoration: none; border-radius: 4px; }
+        .back-button:hover { background-color: #1565c0; }
+        section { background: white; margin-bottom: 2rem; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h2 { color: #1976d2; font-size: 1.5rem; font-weight: 500; margin-bottom: 1.5rem; padding-bottom: 0.5rem; border-bottom: 2px solid #e3f2fd; }
+        h3 { color: #424242; font-size: 1.2rem; font-weight: 500; margin-top: 1.5rem; margin-bottom: 1rem; }
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        th { background-color: #e3f2fd; color: #1565c0; font-weight: 500; padding: 0.75rem; text-align: left; border: 1px solid #bbdefb; }
+        td { padding: 0.75rem; border: 1px solid #e0e0e0; vertical-align: top; }
+        tr:hover { background-color: #f5f5f5; }
+        code { background-color: #f5f5f5; padding: 0.2rem 0.4rem; border-radius: 3px; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.9rem; }
+        ul { margin-left: 2rem; margin-top: 0.5rem; }
+        li { margin-bottom: 0.5rem; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>tsconfig.json - 詳細設計</h1>
+        </div>
+    </header>
+    
+    <div class="container">
+        <a href="index.html" class="back-button">← トップページへ戻る</a>
+        
+        <section>
+            <h2>1. ファイル概要</h2>
+            <table>
+                <tr><th style="width: 200px;">ファイル名</th><td>tsconfig.json</td></tr>
+                <tr><th>役割</th><td>TypeScriptコンパイラの設定ファイル（プロジェクト参照用のルート設定）</td></tr>
+            </table>
+        </section>
+        
+        <section>
+            <h2>2. 設定項目</h2>
+            <h3>2.1 ルート設定</h3>
+            <table>
+                <thead>
+                    <tr><th>項目名</th><th>値</th><th>概要</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>files</td><td>[]</td><td>このルート設定ではファイルを直接含まない</td></tr>
+                    <tr><td>references</td><td>[tsconfig.app.json, tsconfig.node.json]</td><td>プロジェクト参照を使用して複数の設定を分離</td></tr>
+                </tbody>
+            </table>
+            
+            <h3>2.2 参照設定の役割</h3>
+            <ul>
+                <li><strong>tsconfig.app.json</strong>: アプリケーションコード（src/以下）のTypeScript設定</li>
+                <li><strong>tsconfig.node.json</strong>: ビルドツール設定ファイル（vite.config.ts等）のTypeScript設定</li>
+            </ul>
+        </section>
+        
+        <section>
+            <h2>3. tsconfig.app.jsonの主要設定</h2>
+            <table>
+                <thead>
+                    <tr><th>項目名</th><th>値</th><th>概要</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>target</td><td>ES2022</td><td>出力JavaScriptのバージョン</td></tr>
+                    <tr><td>lib</td><td>ES2022, DOM, DOM.Iterable</td><td>使用可能な標準ライブラリ</td></tr>
+                    <tr><td>module</td><td>ESNext</td><td>モジュールシステム（ESモジュール）</td></tr>
+                    <tr><td>jsx</td><td>react-jsx</td><td>JSXの変換方法（React 17+の新しいトランスフォーム）</td></tr>
+                    <tr><td>strict</td><td>true</td><td>厳格な型チェックを有効化</td></tr>
+                    <tr><td>moduleResolution</td><td>bundler</td><td>Bundler対応のモジュール解決</td></tr>
+                    <tr><td>noEmit</td><td>true</td><td>JavaScriptファイルを出力しない（Viteがビルド）</td></tr>
+                    <tr><td>noUnusedLocals</td><td>true</td><td>未使用のローカル変数を検出</td></tr>
+                    <tr><td>noUnusedParameters</td><td>true</td><td>未使用のパラメータを検出</td></tr>
+                    <tr><td>noFallthroughCasesInSwitch</td><td>true</td><td>switch文のフォールスルーを検出</td></tr>
+                </tbody>
+            </table>
+        </section>
+        
+        <section>
+            <h2>4. 型安全性とコード品質</h2>
+            <p>このプロジェクトは以下の方針で高い型安全性を確保しています:</p>
+            <ul>
+                <li><code>strict: true</code>により、すべての厳格な型チェックを有効化</li>
+                <li>未使用の変数・パラメータを自動検出</li>
+                <li>switch文のフォールスルーなど潜在的なバグを防止</li>
+                <li>verbatimModuleSyntaxでimport/exportの整合性を保証</li>
+            </ul>
+        </section>
+        
+        <a href="index.html" class="back-button">← トップページへ戻る</a>
+    </div>
+</body>
+</html>

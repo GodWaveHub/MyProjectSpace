@@ -1,0 +1,36 @@
+classDiagram
+    class フロントエンドアプリケーション {
+        <<React SPA>>
+        +地図表示
+        +レイヤー管理
+        +図形作図
+        +ファイル入出力
+    }
+
+    class GoogleMapsAPI {
+        <<外部サービス>>
+        +地図タイル提供
+        +Drawing Manager
+        +Data Layer
+        +InfoWindow
+    }
+
+    class ブラウザストレージ {
+        <<LocalStorage>>
+        +設定保存
+        +一時データ
+    }
+
+    class ファイルシステム {
+        <<ユーザー端末>>
+        +GeoJSON出力
+        +レイヤー設定出力
+        +ファイル読み込み
+    }
+
+    フロントエンドアプリケーション --> GoogleMapsAPI : API呼び出し
+    フロントエンドアプリケーション --> ブラウザストレージ : データ保存
+    フロントエンドアプリケーション --> ファイルシステム : 入出力
+
+    note for フロントエンドアプリケーション "React 19 + TypeScript\nViteビルド\nクライアントサイド完結"
+    note for GoogleMapsAPI "認証: APIキー\nレート制限あり"

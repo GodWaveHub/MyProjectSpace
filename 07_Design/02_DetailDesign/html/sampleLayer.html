@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>sampleLayer.ts - GIS Map Application 詳細設計書</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #212121; background-color: #fafafa; }
+        header { background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%); color: white; padding: 2rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        header h1 { font-size: 1.8rem; font-weight: 500; margin-bottom: 0.5rem; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+        .back-button { display: inline-block; margin-bottom: 1rem; padding: 0.5rem 1rem; background-color: #1976d2; color: white; text-decoration: none; border-radius: 4px; }
+        .back-button:hover { background-color: #1565c0; }
+        section { background: white; margin-bottom: 2rem; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h2 { color: #1976d2; font-size: 1.5rem; font-weight: 500; margin-bottom: 1.5rem; padding-bottom: 0.5rem; border-bottom: 2px solid #e3f2fd; }
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        th { background-color: #e3f2fd; color: #1565c0; font-weight: 500; padding: 0.75rem; text-align: left; border: 1px solid #bbdefb; }
+        td { padding: 0.75rem; border: 1px solid #e0e0e0; vertical-align: top; }
+        tr:hover { background-color: #f5f5f5; }
+        ul { margin-left: 2rem; margin-top: 0.5rem; }
+        li { margin-bottom: 0.5rem; }
+        code { background-color: #f5f5f5; padding: 0.2rem 0.4rem; border-radius: 3px; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>sampleLayer.ts - 詳細設計</h1>
+        </div>
+    </header>
+    
+    <div class="container">
+        <a href="index.html" class="back-button">← トップページへ戻る</a>
+        
+        <section>
+            <h2>1. ファイル概要</h2>
+            <table>
+                <tr><th style="width: 200px;">ファイル名</th><td>sampleLayer.ts</td></tr>
+                <tr><th>パッケージ</th><td>src/data/</td></tr>
+                <tr><th>役割</th><td>アプリケーションの初期表示用サンプルレイヤーデータの定義</td></tr>
+                <tr><th>依存関係</th><td><ul><li>geojson型 (Feature)</li><li>types/layer.ts (Layer)</li></ul></td></tr>
+            </table>
+        </section>
+        
+        <section>
+            <h2>2. 処理詳細</h2>
+            
+            <h3>2.1 提供するデータ</h3>
+            <table>
+                <thead>
+                    <tr><th>定数名</th><th>型</th><th>説明</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>defaultLayers</td><td>Layer[]</td><td>アプリケーション初回起動時に表示されるサンプルレイヤーの配列</td></tr>
+                </tbody>
+            </table>
+            
+            <h3>2.2 サンプルフィーチャ</h3>
+            <table>
+                <thead>
+                    <tr><th>名称</th><th>ジオメトリタイプ</th><th>座標</th><th>説明</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>HQ (Sample)</td>
+                        <td>Point</td>
+                        <td>[139.767125, 35.681236] (東京駅付近)</td>
+                        <td>プロジェクト拠点のサンプル位置</td>
+                    </tr>
+                    <tr>
+                        <td>重点調査エリア</td>
+                        <td>Polygon</td>
+                        <td>東京駅周辺の矩形エリア</td>
+                        <td>強調表示するポリゴンの例</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <h3>2.3 デフォルトレイヤー設定</h3>
+            <table>
+                <thead>
+                    <tr><th>プロパティ</th><th>値</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>id</td><td>'layer-sample'</td></tr>
+                    <tr><td>name</td><td>'サンプルレイヤー'</td></tr>
+                    <tr><td>visible</td><td>true</td></tr>
+                    <tr><td>style.strokeColor</td><td>'#1976d2'</td></tr>
+                    <tr><td>style.fillColor</td><td>'#90caf9'</td></tr>
+                    <tr><td>style.fillOpacity</td><td>0.45</td></tr>
+                </tbody>
+            </table>
+        </section>
+        
+        <section>
+            <h2>3. 入出力仕様</h2>
+            
+            <h3>3.1 エクスポート</h3>
+            <table>
+                <thead>
+                    <tr><th>エクスポート名</th><th>型</th><th>説明</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>defaultLayers</td><td>Layer[]</td><td>名前付きエクスポート</td></tr>
+                    <tr><td>default</td><td>Layer[]</td><td>デフォルトエクスポート（defaultLayersと同じ）</td></tr>
+                </tbody>
+            </table>
+        </section>
+        
+        <section>
+            <h2>4. 用途</h2>
+            <ul>
+                <li>アプリケーション初回起動時のデモンストレーション</li>
+                <li>「サンプル読込」ボタンクリック時の初期データ復元</li>
+                <li>開発・テスト時の標準データセット</li>
+            </ul>
+        </section>
+        
+        <a href="index.html" class="back-button">← トップページへ戻る</a>
+    </div>
+</body>
+</html>

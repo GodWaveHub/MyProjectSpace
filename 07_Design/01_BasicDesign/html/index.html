@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GIS Map Application 基本設計書</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #212121;
+            background-color: #fafafa;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%);
+            color: white;
+            padding: 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        header h1 {
+            font-size: 2rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+        
+        header .meta {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        section {
+            background: white;
+            margin-bottom: 2rem;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        h2 {
+            color: #388e3c;
+            font-size: 1.5rem;
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #c8e6c9;
+        }
+        
+        h3 {
+            color: #424242;
+            font-size: 1.2rem;
+            font-weight: 500;
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        
+        th {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+            font-weight: 500;
+            padding: 0.75rem;
+            text-align: left;
+            border: 1px solid #a5d6a7;
+        }
+        
+        td {
+            padding: 0.75rem;
+            border: 1px solid #e0e0e0;
+        }
+        
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+        
+        a {
+            color: #388e3c;
+            text-decoration: none;
+        }
+        
+        a:hover {
+            text-decoration: underline;
+        }
+        
+        ul {
+            margin-left: 2rem;
+            margin-top: 0.5rem;
+        }
+        
+        li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .diagram {
+            margin: 2rem 0;
+            text-align: center;
+            padding: 1rem;
+            background-color: #fafafa;
+            border-radius: 8px;
+        }
+        
+        .diagram img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+        }
+        
+        .diagram-caption {
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: #616161;
+        }
+        
+        .toc {
+            background-color: #f1f8e9;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border-left: 4px solid #388e3c;
+        }
+        
+        .toc a {
+            display: block;
+            padding: 0.5rem 0;
+            color: #2e7d32;
+        }
+        
+        .detail-link {
+            display: inline-block;
+            margin-top: 1rem;
+            padding: 0.5rem 1rem;
+            background-color: #388e3c;
+            color: white;
+            border-radius: 4px;
+            text-decoration: none;
+        }
+        
+        .detail-link:hover {
+            background-color: #2e7d32;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>GIS Map Application 基本設計書</h1>
+            <div class="meta">
+                作成日: 2025年11月22日<br>
+                システム名: GIS Map Application (gis-map-app)<br>
+                <strong>詳細設計書:</strong> <a href="../02_DetailDesign/html/index.html" style="color: white; text-decoration: underline;">詳細設計書を参照 →</a>
+            </div>
+        </div>
+    </header>
+    
+    <div class="container">
+        <section>
+            <h2>目次</h2>
+            <div class="toc">
+                <a href="#functions">1. 機能一覧</a>
+                <a href="#screens">2. 画面遷移図</a>
+                <a href="#architecture">3. システム構成</a>
+                <a href="#sequence">4. 全体シーケンス図</a>
+                <a href="#environment">5. 環境・前提条件</a>
+                <a href="#logging">6. ログ方針</a>
+                <a href="#operations">7. 運用・監視</a>
+                <a href="#undecided">8. 未決定事項</a>
+            </div>
+        </section>
+        
+        <section id="functions">
+            <h2>1. 機能一覧</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 50px;">No</th>
+                        <th>機能名</th>
+                        <th>概要</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>地図表示</td>
+                        <td>Google Maps JavaScript APIを使用した地図の表示。ズーム・パン操作に対応</td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>レイヤー管理</td>
+                        <td>複数のレイヤーの作成・削除・表示切替・スタイル編集機能</td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td>図形作図</td>
+                        <td>マーカー・ポリゴン・ライン・矩形・円の作図機能（Google Maps Drawing Manager使用）</td>
+                    </tr>
+                    <tr>
+                        <td>4</td>
+                        <td>GeoJSON入出力</td>
+                        <td>GeoJSON形式でのフィーチャのインポート・エクスポート</td>
+                    </tr>
+                    <tr>
+                        <td>5</td>
+                        <td>レイヤー一覧保存・復元</td>
+                        <td>全レイヤー情報をJSON形式で保存・読み込み</td>
+                    </tr>
+                    <tr>
+                        <td>6</td>
+                        <td>フィーチャ情報表示</td>
+                        <td>地図上のフィーチャクリック時にInfoWindowで詳細表示</td>
+                    </tr>
+                    <tr>
+                        <td>7</td>
+                        <td>レイヤークリア</td>
+                        <td>選択レイヤーの全フィーチャを削除</td>
+                    </tr>
+                    <tr>
+                        <td>8</td>
+                        <td>サンプルデータ読込</td>
+                        <td>デモ用のサンプルレイヤーを読み込み</td>
+                    </tr>
+                </tbody>
+            </table>
+            <a href="../02_DetailDesign/html/index.html" class="detail-link">各機能の詳細設計を見る</a>
+        </section>
+        
+        <section id="screens">
+            <h2>2. 画面遷移図</h2>
+            <p>本アプリケーションはSingle Page Application（SPA）であり、画面遷移は発生しません。すべての機能は単一の画面上で提供されます。</p>
+            <div class="diagram">
+                <img src="assets/screen-flow.svg" alt="画面フロー図">
+                <div class="diagram-caption">図1: 画面フロー（状態遷移）</div>
+            </div>
+            
+            <h3>2.1 画面構成</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>領域</th>
+                        <th>説明</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>地図エリア</td>
+                        <td>Google Maps表示領域。Drawing Managerのツールバーを含む</td>
+                    </tr>
+                    <tr>
+                        <td>レイヤーパネル</td>
+                        <td>画面右側に配置。レイヤー一覧、追加、編集、スタイル設定</td>
+                    </tr>
+                    <tr>
+                        <td>操作ツールバー</td>
+                        <td>画面下部に配置。ファイル保存・読込、レイヤークリア、サンプル読込</td>
+                    </tr>
+                    <tr>
+                        <td>ステータスバナー</td>
+                        <td>画面最下部。操作結果やエラーメッセージを表示</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        
+        <section id="architecture">
+            <h2>3. システム構成</h2>
+            <div class="diagram">
+                <img src="assets/system-architecture.svg" alt="システム構成図">
+                <div class="diagram-caption">図2: システム構成図</div>
+            </div>
+            
+            <h3>3.1 アーキテクチャ概要</h3>
+            <ul>
+                <li><strong>フロントエンドのみ:</strong> サーバーサイド処理なし、完全にクライアントサイドで動作</li>
+                <li><strong>React SPA:</strong> React 19ベースのシングルページアプリケーション</li>
+                <li><strong>静的ホスティング:</strong> ビルド後のHTML/CSS/JSを静的Webサーバーでホスティング可能</li>
+                <li><strong>外部API連携:</strong> Google Maps JavaScript APIのみ</li>
+            </ul>
+            
+            <h3>3.2 技術スタック</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>レイヤー</th>
+                        <th>技術</th>
+                        <th>バージョン</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>UIフレームワーク</td>
+                        <td>React</td>
+                        <td>19.2.0</td>
+                    </tr>
+                    <tr>
+                        <td>プログラミング言語</td>
+                        <td>TypeScript</td>
+                        <td>5.9.3</td>
+                    </tr>
+                    <tr>
+                        <td>ビルドツール</td>
+                        <td>Vite (Rolldown版)</td>
+                        <td>7.2.5</td>
+                    </tr>
+                    <tr>
+                        <td>地図API</td>
+                        <td>Google Maps JavaScript API</td>
+                        <td>weekly</td>
+                    </tr>
+                    <tr>
+                        <td>データ形式</td>
+                        <td>GeoJSON</td>
+                        <td>RFC 7946</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        
+        <section id="sequence">
+            <h2>4. 全体シーケンス図</h2>
+            <div class="diagram">
+                <img src="assets/overall-sequence.svg" alt="全体シーケンス図">
+                <div class="diagram-caption">図3: システム全体の処理シーケンス</div>
+            </div>
+        </section>
+        
+        <section id="environment">
+            <h2>5. 環境・前提条件</h2>
+            
+            <h3>5.1 開発環境</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>項目</th>
+                        <th>要件</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Node.js</td>
+                        <td>v18以上推奨</td>
+                    </tr>
+                    <tr>
+                        <td>パッケージマネージャ</td>
+                        <td>npm, yarn, pnpm いずれか</td>
+                    </tr>
+                    <tr>
+                        <td>エディタ</td>
+                        <td>VS Code推奨（TypeScript/ESLint拡張機能）</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <h3>5.2 実行環境（ブラウザ）</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ブラウザ</th>
+                        <th>サポートバージョン</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Google Chrome</td>
+                        <td>最新版およびその1つ前のメジャーバージョン</td>
+                    </tr>
+                    <tr>
+                        <td>Microsoft Edge</td>
+                        <td>最新版およびその1つ前のメジャーバージョン</td>
+                    </tr>
+                    <tr>
+                        <td>Firefox</td>
+                        <td>最新版およびその1つ前のメジャーバージョン</td>
+                    </tr>
+                    <tr>
+                        <td>Safari</td>
+                        <td>最新版（macOS/iOS）</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <h3>5.3 必須設定</h3>
+            <ul>
+                <li><strong>Google Maps API キー:</strong> 環境変数<code>VITE_GOOGLE_MAPS_API_KEY</code>に設定必須</li>
+                <li><strong>API制限:</strong> Maps JavaScript API、Drawing Libraryを有効化</li>
+                <li><strong>HTTPSまたはlocalhost:</strong> Google Maps APIはHTTPSまたはlocalhostでのみ動作</li>
+            </ul>
+        </section>
+        
+        <section id="logging">
+            <h2>6. ログ方針</h2>
+            
+            <h3>6.1 ログ出力先</h3>
+            <p>本アプリケーションはクライアントサイドのみで動作するため、ログはブラウザのコンソールに出力されます。</p>
+            
+            <h3>6.2 ログレベル</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>レベル</th>
+                        <th>用途</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>info</td>
+                        <td>通常の操作完了メッセージ（例: レイヤー追加成功）</td>
+                    </tr>
+                    <tr>
+                        <td>success</td>
+                        <td>重要な操作の成功（例: ファイル保存完了）</td>
+                    </tr>
+                    <tr>
+                        <td>error</td>
+                        <td>エラー発生時のメッセージ（例: APIキー未設定、ファイル読み込み失敗）</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <h3>6.3 ログ形式</h3>
+            <ul>
+                <li>ユーザー向けメッセージは画面下部のステータスバナーに日本語で表示</li>
+                <li>開発者向けログはブラウザコンソールに出力</li>
+                <li>タイムゾーン: ブラウザのローカルタイムゾーン</li>
+            </ul>
+        </section>
+        
+        <section id="operations">
+            <h2>7. 運用・監視</h2>
+            
+            <h3>7.1 監視観点</h3>
+            <p>クライアントサイドアプリケーションのため、サーバー側の監視は不要です。</p>
+            <ul>
+                <li><strong>Google Maps APIクォータ:</strong> Google Cloud Consoleで利用状況を監視</li>
+                <li><strong>ブラウザエラー:</strong> 本番環境ではSentryなどのエラー追跡ツールの導入を推奨</li>
+            </ul>
+            
+            <h3>7.2 バックアップ</h3>
+            <ul>
+                <li>ユーザーデータはブラウザのLocalStorageに保存されません（すべてファイル経由）</li>
+                <li>ユーザー自身がレイヤー一覧をJSON形式でエクスポート・バックアップ</li>
+            </ul>
+            
+            <h3>7.3 復旧手順</h3>
+            <p>データ消失時は、ユーザーが保存したJSONファイルを読み込むことで復元可能です。</p>
+        </section>
+        
+        <section id="undecided">
+            <h2>8. 未決定事項</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 50px;">No</th>
+                        <th>項目</th>
+                        <th>内容</th>
+                        <th>決定方針</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>認証機能</td>
+                        <td>ユーザー認証・権限管理の要否</td>
+                        <td>将来的な要件として検討。現時点では不要</td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>サーバーサイド保存</td>
+                        <td>レイヤーデータのクラウド保存機能</td>
+                        <td>フェーズ2以降で検討。現在はローカルファイルのみ</td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td>多言語対応</td>
+                        <td>UI・メッセージの国際化</td>
+                        <td>需要が確認できた時点で対応</td>
+                    </tr>
+                    <tr>
+                        <td>4</td>
+                        <td>オフライン対応</td>
+                        <td>PWA化・オフライン機能の実装</td>
+                        <td>ユーザーフィードバックに基づき検討</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </div>
+</body>
+</html>

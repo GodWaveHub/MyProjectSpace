@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GIS Map Application 詳細設計書</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #212121;
+            background-color: #fafafa;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
+            color: white;
+            padding: 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        header h1 {
+            font-size: 2rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+        
+        header .meta {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        section {
+            background: white;
+            margin-bottom: 2rem;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        h2 {
+            color: #1976d2;
+            font-size: 1.5rem;
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #e3f2fd;
+        }
+        
+        h3 {
+            color: #424242;
+            font-size: 1.2rem;
+            font-weight: 500;
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        
+        th {
+            background-color: #e3f2fd;
+            color: #1565c0;
+            font-weight: 500;
+            padding: 0.75rem;
+            text-align: left;
+            border: 1px solid #bbdefb;
+        }
+        
+        td {
+            padding: 0.75rem;
+            border: 1px solid #e0e0e0;
+        }
+        
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+        
+        a {
+            color: #1976d2;
+            text-decoration: none;
+        }
+        
+        a:hover {
+            text-decoration: underline;
+        }
+        
+        ul {
+            margin-left: 2rem;
+            margin-top: 0.5rem;
+        }
+        
+        li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .diagram {
+            margin: 2rem 0;
+            text-align: center;
+            padding: 1rem;
+            background-color: #fafafa;
+            border-radius: 8px;
+        }
+        
+        .diagram img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+        }
+        
+        .diagram-caption {
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: #616161;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>GIS Map Application 詳細設計書</h1>
+            <div class="meta">
+                作成日: 2025年11月22日<br>
+                システム名: GIS Map Application (gis-map-app)
+            </div>
+        </div>
+    </header>
+    
+    <div class="container">
+        <section>
+            <h2>1. 使用した主なフレームワーク・ライブラリ一覧</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>名称</th>
+                        <th>バージョン</th>
+                        <th>用途</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>React</td>
+                        <td>19.2.0</td>
+                        <td>UIコンポーネントフレームワーク</td>
+                    </tr>
+                    <tr>
+                        <td>React DOM</td>
+                        <td>19.2.0</td>
+                        <td>React DOM レンダリング</td>
+                    </tr>
+                    <tr>
+                        <td>TypeScript</td>
+                        <td>5.9.3</td>
+                        <td>型安全な開発言語</td>
+                    </tr>
+                    <tr>
+                        <td>Vite (rolldown-vite)</td>
+                        <td>7.2.5</td>
+                        <td>ビルドツール・開発サーバー</td>
+                    </tr>
+                    <tr>
+                        <td>@googlemaps/js-api-loader</td>
+                        <td>2.0.2</td>
+                        <td>Google Maps JavaScript API ローダー</td>
+                    </tr>
+                    <tr>
+                        <td>@types/google.maps</td>
+                        <td>3.58.1</td>
+                        <td>Google Maps API の型定義</td>
+                    </tr>
+                    <tr>
+                        <td>@types/geojson</td>
+                        <td>7946.0.16</td>
+                        <td>GeoJSON 形式の型定義</td>
+                    </tr>
+                    <tr>
+                        <td>ESLint</td>
+                        <td>9.39.1</td>
+                        <td>コード品質チェック</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        
+        <section>
+            <h2>2. 全体構成図</h2>
+            
+            <h3>2.1 全体クラス図</h3>
+            <div class="diagram">
+                <img src="assets/class-overview.svg" alt="全体クラス図">
+                <div class="diagram-caption">図1: システム全体のクラス構成</div>
+            </div>
+            
+            <h3>2.2 全体シーケンス図</h3>
+            <div class="diagram">
+                <img src="assets/sequence-overview.svg" alt="全体シーケンス図">
+                <div class="diagram-caption">図2: システム全体の処理フロー</div>
+            </div>
+        </section>
+        
+        <section>
+            <h2>3. プログラム一覧</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>分類</th>
+                        <th>ファイル名</th>
+                        <th>パッケージ</th>
+                        <th>概要</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>メイン処理</td>
+                        <td><a href="App.html">App.tsx</a></td>
+                        <td>src/</td>
+                        <td>アプリケーションのルートコンポーネント</td>
+                    </tr>
+                    <tr>
+                        <td>メイン処理</td>
+                        <td><a href="main.html">main.tsx</a></td>
+                        <td>src/</td>
+                        <td>アプリケーションのエントリーポイント</td>
+                    </tr>
+                    <tr>
+                        <td>コンポーネント</td>
+                        <td><a href="MapCanvas.html">MapCanvas.tsx</a></td>
+                        <td>src/components/</td>
+                        <td>Google Maps表示・操作の中核コンポーネント</td>
+                    </tr>
+                    <tr>
+                        <td>コンポーネント</td>
+                        <td><a href="LayerPanel.html">LayerPanel.tsx</a></td>
+                        <td>src/components/</td>
+                        <td>レイヤー管理パネルコンポーネント</td>
+                    </tr>
+                    <tr>
+                        <td>型定義</td>
+                        <td><a href="layer.html">layer.ts</a></td>
+                        <td>src/types/</td>
+                        <td>レイヤー関連の型定義</td>
+                    </tr>
+                    <tr>
+                        <td>ユーティリティ</td>
+                        <td><a href="geojson.html">geojson.ts</a></td>
+                        <td>src/utils/</td>
+                        <td>GeoJSON変換ユーティリティ</td>
+                    </tr>
+                    <tr>
+                        <td>データ</td>
+                        <td><a href="sampleLayer.html">sampleLayer.ts</a></td>
+                        <td>src/data/</td>
+                        <td>サンプルレイヤーデータ</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        
+        <section>
+            <h2>4. 設定ファイル一覧</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ファイル名</th>
+                        <th>概要</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><a href="package-json.html">package.json</a></td>
+                        <td>プロジェクト設定・依存関係定義</td>
+                    </tr>
+                    <tr>
+                        <td><a href="vite-config.html">vite.config.ts</a></td>
+                        <td>Viteビルドツール設定</td>
+                    </tr>
+                    <tr>
+                        <td><a href="tsconfig.html">tsconfig.json</a></td>
+                        <td>TypeScriptコンパイラ設定</td>
+                    </tr>
+                    <tr>
+                        <td><a href="eslint-config.html">eslint.config.js</a></td>
+                        <td>ESLintコード品質チェック設定</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </div>
+</body>
+</html>

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>geojson.ts - GIS Map Application 詳細設計書</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #212121; background-color: #fafafa; }
+        header { background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%); color: white; padding: 2rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        header h1 { font-size: 1.8rem; font-weight: 500; margin-bottom: 0.5rem; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+        .back-button { display: inline-block; margin-bottom: 1rem; padding: 0.5rem 1rem; background-color: #1976d2; color: white; text-decoration: none; border-radius: 4px; }
+        .back-button:hover { background-color: #1565c0; }
+        section { background: white; margin-bottom: 2rem; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h2 { color: #1976d2; font-size: 1.5rem; font-weight: 500; margin-bottom: 1.5rem; padding-bottom: 0.5rem; border-bottom: 2px solid #e3f2fd; }
+        h3 { color: #424242; font-size: 1.2rem; font-weight: 500; margin-top: 1.5rem; margin-bottom: 1rem; }
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        th { background-color: #e3f2fd; color: #1565c0; font-weight: 500; padding: 0.75rem; text-align: left; border: 1px solid #bbdefb; }
+        td { padding: 0.75rem; border: 1px solid #e0e0e0; vertical-align: top; }
+        tr:hover { background-color: #f5f5f5; }
+        ul { margin-left: 2rem; margin-top: 0.5rem; }
+        li { margin-bottom: 0.5rem; }
+        code { background-color: #f5f5f5; padding: 0.2rem 0.4rem; border-radius: 3px; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.9rem; }
+        .diagram { margin: 2rem 0; text-align: center; padding: 1rem; background-color: #fafafa; border-radius: 8px; }
+        .diagram img { max-width: 100%; height: auto; border: 1px solid #e0e0e0; border-radius: 4px; }
+        .diagram-caption { margin-top: 1rem; font-size: 0.9rem; color: #616161; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>geojson.ts - 詳細設計</h1>
+        </div>
+    </header>
+    
+    <div class="container">
+        <a href="index.html" class="back-button">← トップページへ戻る</a>
+        
+        <section>
+            <h2>1. ファイル概要</h2>
+            <table>
+                <tr><th style="width: 200px;">ファイル名</th><td>geojson.ts</td></tr>
+                <tr><th>パッケージ</th><td>src/utils/</td></tr>
+                <tr><th>役割</th><td>Google Maps図形とGeoJSON Feature間の相互変換ユーティリティ</td></tr>
+                <tr><th>依存関係</th><td><ul><li>geojson型 (Feature, FeatureCollection, Geometry, Position)</li><li>google.maps型 (各種図形クラス)</li></ul></td></tr>
+            </table>
+        </section>
+        
+        <section>
+            <h2>2. 処理詳細</h2>
+            
+            <h3>2.1 定数</h3>
+            <table>
+                <thead>
+                    <tr><th>定数名</th><th>値</th><th>説明</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>EARTH_RADIUS_IN_METERS</td><td>6,378,137</td><td>地球の半径（メートル）。円のポリゴン近似計算に使用</td></tr>
+                </tbody>
+            </table>
+            
+            <h3>2.2 公開関数</h3>
+            <table>
+                <thead>
+                    <tr><th style="width: 300px;">関数名</th><th>説明</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>convertOverlayToFeature(event: OverlayCompleteEvent): Feature | null</td><td>Google Maps Drawing Managerで作成された図形（Marker, Polyline, Polygon, Rectangle, Circle）をGeoJSON Featureに変換。変換できない場合はnullを返す</td></tr>
+                    <tr><td>normalizeGeoJson(raw: unknown): Feature | Feature[] | null</td><td>不明な形式のJSONをGeoJSON形式に正規化。FeatureCollection, Feature, Feature配列を解析し、統一的にFeatureまたはFeature配列として返す</td></tr>
+                </tbody>
+            </table>
+            
+            <h3>2.3 内部ヘルパー関数</h3>
+            <table>
+                <thead>
+                    <tr><th style="width: 300px;">関数名</th><th>説明</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>createFeatureId(): string</td><td>crypto.randomUUID()またはタイムスタンプベースでユニークなFeature IDを生成</td></tr>
+                    <tr><td>pathToLinearRing(path: MVCArray&lt;LatLng&gt;): Position[]</td><td>Google MapsのMVCArray座標をGeoJSONのLinearRing（閉じた座標配列）に変換。最初と最後の座標が異なる場合は自動で閉じる</td></tr>
+                    <tr><td>circleToPolygon(circle: Circle, segments: number): Position[][]</td><td>円を指定セグメント数のポリゴンに近似変換（デフォルト48セグメント）</td></tr>
+                    <tr><td>rectangleToPolygon(rectangle: Rectangle): Position[][]</td><td>矩形の境界をポリゴンの座標配列に変換</td></tr>
+                    <tr><td>polylineToCoordinates(polyline: Polyline): Position[]</td><td>PolylineをLineString座標配列に変換</td></tr>
+                    <tr><td>polygonToCoordinates(polygon: Polygon): Position[][]</td><td>Polygonの外側リングと内側リング（穴）をGeoJSON座標配列に変換</td></tr>
+                </tbody>
+            </table>
+        </section>
+        
+        <section>
+            <h2>3. 入出力仕様</h2>
+            
+            <h3>3.1 convertOverlayToFeature</h3>
+            <h4>入力</h4>
+            <table>
+                <thead>
+                    <tr><th>パラメータ名</th><th>型</th><th>説明</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>event</td><td>google.maps.drawing.OverlayCompleteEvent</td><td>Drawing Managerの図形完成イベント。event.type と event.overlay を含む</td></tr>
+                </tbody>
+            </table>
+            <h4>出力</h4>
+            <table>
+                <thead>
+                    <tr><th>型</th><th>説明</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Feature | null</td><td>変換成功時はGeoJSON Feature（id, geometry, propertiesを含む）、失敗時はnull</td></tr>
+                </tbody>
+            </table>
+            <h4>サポートする図形タイプ</h4>
+            <ul>
+                <li><strong>MARKER</strong> → Point</li>
+                <li><strong>POLYLINE</strong> → LineString</li>
+                <li><strong>POLYGON</strong> → Polygon</li>
+                <li><strong>RECTANGLE</strong> → Polygon</li>
+                <li><strong>CIRCLE</strong> → Polygon（近似）</li>
+            </ul>
+            
+            <h3>3.2 normalizeGeoJson</h3>
+            <h4>入力</h4>
+            <table>
+                <thead>
+                    <tr><th>パラメータ名</th><th>型</th><th>説明</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>raw</td><td>unknown</td><td>任意のJSON形式データ</td></tr>
+                </tbody>
+            </table>
+            <h4>出力</h4>
+            <table>
+                <thead>
+                    <tr><th>型</th><th>説明</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Feature | Feature[] | null</td><td>FeatureCollectionの場合はfeatures配列、単一Featureの場合はそのまま、配列の場合は配列として返す。不正な形式の場合はnull</td></tr>
+                </tbody>
+            </table>
+        </section>
+        
+        <section>
+            <h2>4. 例外・バリデーション仕様</h2>
+            <table>
+                <thead>
+                    <tr><th>条件</th><th>処理</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>overlayがnull/undefined</td><td>nullを返す</td></tr>
+                    <tr><td>未サポートの図形タイプ</td><td>nullを返す</td></tr>
+                    <tr><td>座標取得失敗（例: position/bounds/path が null）</td><td>nullを返す</td></tr>
+                    <tr><td>座標数不足（例: LineString が2点未満、Polygon が4点未満）</td><td>nullを返す</td></tr>
+                    <tr><td>rawがnullまたはオブジェクトでない</td><td>nullを返す</td></tr>
+                    <tr><td>typeプロパティがない、またはFeature/FeatureCollectionでない</td><td>配列の場合はそのまま返し、それ以外はnull</td></tr>
+                </tbody>
+            </table>
+        </section>
+        
+        <section>
+            <h2>5. クラス図</h2>
+            <div class="diagram">
+                <img src="assets/class-geojsonUtils.svg" alt="GeoJsonUtilsクラス図">
+                <div class="diagram-caption">図: GeoJSON変換ユーティリティの構造</div>
+            </div>
+        </section>
+        
+        <a href="index.html" class="back-button">← トップページへ戻る</a>
+    </div>
+</body>
+</html>

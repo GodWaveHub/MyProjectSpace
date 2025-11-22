@@ -1,0 +1,23 @@
+classDiagram
+    class Layer {
+        +id: string
+        +name: string
+        +visible: boolean
+        +style: LayerStyle
+        +features: Feature[]
+    }
+
+    class LayerStyle {
+        +strokeColor: string
+        +fillColor: string
+        +fillOpacity: number
+    }
+
+    class LayerCollectionFile {
+        +version: "1.0"
+        +exportedAt: string
+        +layers: Layer[]
+    }
+
+    Layer --> LayerStyle : contains
+    LayerCollectionFile --> Layer : contains

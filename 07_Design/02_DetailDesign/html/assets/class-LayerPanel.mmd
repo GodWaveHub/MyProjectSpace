@@ -1,0 +1,33 @@
+classDiagram
+    class LayerPanel {
+        +layers: Layer[]
+        +activeLayerId: string | null
+        +onSelectLayer: (layerId: string) => void
+        +onAddLayer: (name: string) => void
+        +onDeleteLayer: (layerId: string) => void
+        +onToggleLayer: (layerId: string) => void
+        +onUpdateLayer: (layerId: string, updates: object) => void
+        +onSaveLayerList: () => void
+        +onLoadLayerList: (file: File) => void
+        -newLayerName: string
+        -layerFileInputRef: RefObject~HTMLInputElement~
+        +render() ReactElement
+        -handleAddLayer() void
+        -handleLayerFileChange(event: ChangeEvent) void
+        -triggerLayerImport() void
+    }
+
+    class LayerPanelProps {
+        +layers: Layer[]
+        +activeLayerId: string | null
+        +onSelectLayer: Function
+        +onAddLayer: Function
+        +onDeleteLayer: Function
+        +onToggleLayer: Function
+        +onUpdateLayer: Function
+        +onSaveLayerList: Function
+        +onLoadLayerList: Function
+    }
+
+    LayerPanel --> LayerPanelProps : accepts
+    LayerPanel --> Layer : displays

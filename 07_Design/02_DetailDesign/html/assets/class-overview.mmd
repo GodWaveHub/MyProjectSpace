@@ -1,0 +1,83 @@
+classDiagram
+    class App {
+        +render() ReactElement
+    }
+
+    class MapCanvas {
+        -containerRef: RefObject~HTMLDivElement~
+        -mapRef: RefObject~google.maps.Map~
+        -drawingManagerRef: RefObject~DrawingManager~
+        -infoWindowRef: RefObject~InfoWindow~
+        -layers: Layer[]
+        -activeLayerId: string | null
+        -status: Status
+        +render() ReactElement
+        -rebuildMapLayers(layers: Layer[]) void
+        -attachDataLayerInteractions() void
+        -handleOverlayComplete(event: OverlayCompleteEvent) void
+        -handleSaveGeoJson() void
+        -handleFileChange(event: ChangeEvent) void
+        -handleClearLayer() void
+        -handleAddLayer(name: string) void
+        -handleDeleteLayer(layerId: string) void
+        -handleToggleLayer(layerId: string) void
+        -handleUpdateLayer(layerId: string, updates: object) void
+        -handleSaveLayerList() void
+        -handleLoadLayerList(file: File) void
+    }
+
+    class LayerPanel {
+        +layers: Layer[]
+        +activeLayerId: string | null
+        +onSelectLayer: Function
+        +onAddLayer: Function
+        +onDeleteLayer: Function
+        +onToggleLayer: Function
+        +onUpdateLayer: Function
+        +onSaveLayerList: Function
+        +onLoadLayerList: Function
+        +render() ReactElement
+    }
+
+    class Layer {
+        +id: string
+        +name: string
+        +visible: boolean
+        +style: LayerStyle
+        +features: Feature[]
+    }
+
+    class LayerStyle {
+        +strokeColor: string
+        +fillColor: string
+        +fillOpacity: number
+    }
+
+    class LayerCollectionFile {
+        +version: string
+        +exportedAt: string
+        +layers: Layer[]
+    }
+
+    class geojsonUtils {
+        +convertOverlayToFeature(event: OverlayCompleteEvent) Feature | null
+        +normalizeGeoJson(raw: unknown) Feature | Feature[] | null
+        -pathToLinearRing(path: MVCArray) Position[]
+        -circleToPolygon(circle: Circle, segments: number) Position[][]
+        -rectangleToPolygon(rectangle: Rectangle) Position[][]
+        -polylineToCoordinates(polyline: Polyline) Position[]
+        -polygonToCoordinates(polygon: Polygon) Position[][]
+    }
+
+    class sampleLayer {
+        +defaultLayers: Layer[]
+    }
+
+    App --> MapCanvas : uses
+    MapCanvas --> LayerPanel : uses
+    MapCanvas --> Layer : manages
+    MapCanvas --> geojsonUtils : uses
+    MapCanvas --> sampleLayer : imports
+    Layer --> LayerStyle : has
+    LayerPanel --> Layer : displays
+    LayerCollectionFile --> Layer : contains
