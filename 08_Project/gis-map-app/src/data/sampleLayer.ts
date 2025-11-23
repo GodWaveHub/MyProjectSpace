@@ -1,6 +1,11 @@
+/**
+ * サンプルレイヤーデータ
+ * アプリケーションの初期表示用サンプルデータ
+ */
 import type { Feature } from 'geojson'
 import type { Layer } from '../types/layer'
 
+/** サンプルフィーチャの配列 */
 const sampleFeatures: Feature[] = [
   {
     type: 'Feature',
@@ -34,15 +39,24 @@ const sampleFeatures: Feature[] = [
   },
 ]
 
-export const defaultLayers: Layer[] = [
+/**
+ * デフォルトレイヤー
+ * アプリケーション起動時に読み込まれる初期レイヤー
+ */
+export const defaultLayers: Array<Layer & { type: 'layer' }> = [
   {
     id: 'layer-sample',
     name: 'サンプルレイヤー',
     visible: true,
+    type: 'layer',
     style: {
       strokeColor: '#1976d2',
+      strokeWidth: 2,
+      strokeStyle: 'solid',
       fillColor: '#90caf9',
       fillOpacity: 0.45,
+      pointSize: 8,
+      pointShape: 'circle',
     },
     features: sampleFeatures,
   },

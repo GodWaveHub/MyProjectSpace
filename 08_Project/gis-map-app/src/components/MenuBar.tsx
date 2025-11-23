@@ -1,0 +1,177 @@
+/**
+ * メニューバーコンポーネント
+ * 左上のハンバーガーメニューボタンとメニューパネルを提供
+ * レイヤー操作、検索、印刷、凡例表示などの機能へのアクセスポイント
+ */
+import { useRef, useState } from 'react'
+import type { ChangeEvent } from 'react'
+
+/**
+ * MenuBarコンポーネントのプロパティ
+ */
+export type MenuBarProps = {
+  onToggleLayerPanel: () => void
+  onSaveLayerList: () => void
+  onLoadLayerList: (file: File) => void
+  onLoadGeoJson: () => void
+  onSaveGeoJson: () => void
+  onClearLayer: () => void
+  onLoadSample: () => void
+  onShowBookmark: () => void
+  onShowCoordinateSearch: () => void
+  onShowAddressSearch: () => void
+  onPrint: () => void
+  onShowLegend: () => void
+}
+
+/**
+ * MenuBarコンポーネント
+ * @param props - メニューバーのプロパティ
+ * @returns メニューバーUI要素
+ */
+const MenuBar = ({
+  onToggleLayerPanel,
+  onSaveLayerList,
+  onLoadLayerList,
+  onLoadGeoJson,
+  onSaveGeoJson,
+  onClearLayer,
+  onLoadSample,
+  onShowBookmark,
+  onShowCoordinateSearch,
+  onShowAddressSearch,
+  onPrint,
+  onShowLegend,
+}: MenuBarProps) => {
+  // メニューの開閉状態
+  const [isOpen, setIsOpen] = useState(false)
+  // レイヤーリストファイル入力の参照
+  const layerListFileInputRef = useRef<HTMLInputElement | null>(null)
+
+  /**
+   * メニューアイテムがクリックされたときの処理
+   * アクションを実行してメニューを閉じる
+   */
+  const handleMenuItemClick = (action: () => void) => {
+    action()
+    setIsOpen(false)
+  }
+
+  /**
+   * レイヤーリストファイルが選択されたときの処理
+   */
+  const handleLayerListFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (file) {
+      // ファイルを読み込んでメニューを閉じる
+      onLoadLayerList(file)
+      setIsOpen(false)
+    }
+    // 入力をリセット（同じファイルを再度選択できるように）
+    event.target.value = ''
+  }
+
+  /**
+   * レイヤーリストインポートダイアログを開く
+   */
+  const triggerLayerListImport = () => {
+    layerListFileInputRef.current?.click()
+  }
+
+  return (
+    <>
+      <button
+        type="button"
+        className="menu-button"
+        onClick={() => setIsOpen(!isOpen)}
+        aria-label="メニューを開く"
+        aria-expanded={isOpen}
+      >
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <line x1="3" y1="6" x2="21" y2="6" />
+          <line x1="3" y1="12" x2="21" y2="12" />
+          <line x1="3" y1="18" x2="21" y2="18" />
+        </svg>
+      </button>
+
+      {isOpen && (
+        <>
+          <div className="menu-overlay" onClick={() => setIsOpen(false)} />
+          <nav className="menu-panel">
+            <div className="menu-header">
+              <h3>メニュー</h3>
+              <button
+                type="button"
+                className="menu-close"
+                onClick={() => setIsOpen(false)}
+                aria-label="閉じる"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="menu-content">
+              <section className="menu-section">
+                <h4>レイヤー</h4>
+                <button type="button" onClick={() => handleMenuItemClick(onToggleLayerPanel)}>
+                  📁 レイヤーツリー表示
+                </button>
+                <button type="button" onClick={() => handleMenuItemClick(onSaveLayerList)}>
+                  💾 レイヤー情報保存
+                </button>
+                <button type="button" onClick={() => handleMenuItemClick(triggerLayerListImport)}>
+                  📂 レイヤー情報読み込み
+                </button>
+                <button type="button" onClick={() => handleMenuItemClick(onLoadGeoJson)}>
+                  📥 GeoJSON読込
+                </button>
+                <button type="button" onClick={() => handleMenuItemClick(onSaveGeoJson)}>
+                  📤 GeoJSON保存
+                </button>
+                <button type="button" onClick={() => handleMenuItemClick(onClearLayer)}>
+                  🗑️ レイヤークリア
+                </button>
+                <button type="button" onClick={() => handleMenuItemClick(onLoadSample)}>
+                  📋 サンプルデータ読込
+                </button>
+              </section>
+
+              <section className="menu-section">
+                <h4>検索</h4>
+                <button type="button" onClick={() => handleMenuItemClick(onShowBookmark)}>
+                  🔖 ブックマーク
+                </button>
+                <button type="button" onClick={() => handleMenuItemClick(onShowCoordinateSearch)}>
+                  🌐 緯度経度検索
+                </button>
+                <button type="button" onClick={() => handleMenuItemClick(onShowAddressSearch)}>
+                  📍 住所検索
+                </button>
+              </section>
+
+              <section className="menu-section">
+                <h4>その他</h4>
+                <button type="button" onClick={() => handleMenuItemClick(onPrint)}>
+                  🖨️ 印刷
+                </button>
+                <button type="button" onClick={() => handleMenuItemClick(onShowLegend)}>
+                  📊 凡例表示
+                </button>
+              </section>
+            </div>
+          </nav>
+        </>
+      )}
+
+      <input
+        type="file"
+        accept="application/json"
+        ref={layerListFileInputRef}
+        className="file-input"
+        onChange={handleLayerListFileChange}
+      />
+    </>
+  )
+}
+
+export default MenuBar

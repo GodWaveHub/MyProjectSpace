@@ -1,13 +1,26 @@
+/**
+ * GeoJSONユーティリティ
+ * Google Maps図形とGeoJSON形式の相互変換を提供
+ */
 import type { Feature, FeatureCollection, Geometry, Position } from 'geojson'
 
-/** Earth radius in meters used to approximate circle polygons. */
+/** 円形ポリゴン近似に使用する地球半径（メートル） */
 const EARTH_RADIUS_IN_METERS = 6_378_137
 
+/**
+ * フィーチャIDを生成
+ * @returns ユニークなフィーチャID
+ */
 const createFeatureId = () =>
   typeof crypto !== 'undefined' && 'randomUUID' in crypto
     ? crypto.randomUUID()
     : `feature-${Date.now()}`
 
+/**
+ * Google MapsのパスをGeoJSON LinearRingに変換
+ * @param path Google MapsのLatLng配列
+ * @returns GeoJSON Position配列（閉じたリング）
+ */
 const pathToLinearRing = (path: google.maps.MVCArray<google.maps.LatLng>): Position[] => {
   const coordinates: Position[] = []
   path.forEach((latLng) => {
@@ -25,6 +38,12 @@ const pathToLinearRing = (path: google.maps.MVCArray<google.maps.LatLng>): Posit
   return coordinates
 }
 
+/**
+ * Google Maps円をGeoJSONポリゴンに変換
+ * @param circle Google Maps円オブジェクト
+ * @param segments ポリゴンの辺数（デフォルト48）
+ * @returns GeoJSON Polygon座標配列
+ */
 const circleToPolygon = (
   circle: google.maps.Circle,
   segments = 48,
@@ -57,6 +76,11 @@ const circleToPolygon = (
   return [coordinates]
 }
 
+/**
+ * Google Maps矩形をGeoJSONポリゴンに変換
+ * @param rectangle Google Maps矩形オブジェクト
+ * @returns GeoJSON Polygon座標配列
+ */
 const rectangleToPolygon = (rectangle: google.maps.Rectangle): Position[][] => {
   const bounds = rectangle.getBounds()
   if (!bounds) {
@@ -83,6 +107,11 @@ const rectangleToPolygon = (rectangle: google.maps.Rectangle): Position[][] => {
   return [ring]
 }
 
+/**
+ * Google Mapsポリラインを座標配列に変換
+ * @param polyline Google Mapsポリラインオブジェクト
+ * @returns GeoJSON Position配列
+ */
 const polylineToCoordinates = (
   polyline: google.maps.Polyline,
 ): Position[] => {
@@ -94,6 +123,11 @@ const polylineToCoordinates = (
   return positions
 }
 
+/**
+ * Google Mapsポリゴンを座標配列に変換
+ * @param polygon Google Mapsポリゴンオブジェクト
+ * @returns GeoJSON Polygon座標配列
+ */
 const polygonToCoordinates = (
   polygon: google.maps.Polygon,
 ): Position[][] => {
@@ -110,6 +144,11 @@ const polygonToCoordinates = (
   return rings
 }
 
+/**
+ * Google Maps描画イベントをGeoJSONフィーチャに変換
+ * @param event Google Maps描画完了イベント
+ * @returns GeoJSON Feature、変換できない場合はnull
+ */
 export const convertOverlayToFeature = (
   event: google.maps.drawing.OverlayCompleteEvent,
 ): Feature | null => {
@@ -211,6 +250,12 @@ export const convertOverlayToFeature = (
   }
 }
 
+/**
+ * GeoJSONデータを正規化
+ * FeatureCollectionまたはFeatureを統一された形式に変換
+ * @param raw 生のGeoJSONデータ
+ * @returns 正規化されたFeatureまたは配列、無効な場合はnull
+ */
 export const normalizeGeoJson = (raw: unknown): Feature | Feature[] | null => {
   if (!raw || typeof raw !== 'object') {
     return null

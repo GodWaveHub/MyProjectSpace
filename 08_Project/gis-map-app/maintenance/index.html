@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>メンテナンス中 - GIS Map Application</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+                'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        
+        .maintenance-container {
+            background: white;
+            border-radius: 20px;
+            padding: 60px 40px;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: fadeIn 0.6s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .maintenance-icon {
+            font-size: 80px;
+            margin-bottom: 30px;
+            animation: rotate 3s linear infinite;
+        }
+        
+        @keyframes rotate {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        
+        h1 {
+            color: #333;
+            font-size: 32px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        
+        p {
+            color: #666;
+            font-size: 18px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        
+        .schedule {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 30px 0;
+        }
+        
+        .schedule strong {
+            color: #667eea;
+            font-size: 20px;
+        }
+        
+        .schedule-time {
+            color: #333;
+            font-size: 24px;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+        
+        .contact-info {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 30px;
+        }
+        
+        .contact-info p {
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        
+        .contact-info a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+        
+        .contact-info a:hover {
+            color: #764ba2;
+            text-decoration: underline;
+        }
+        
+        .loading-dots {
+            display: inline-block;
+            margin-left: 5px;
+        }
+        
+        .loading-dots span {
+            animation: blink 1.4s infinite;
+            opacity: 0;
+        }
+        
+        .loading-dots span:nth-child(1) {
+            animation-delay: 0s;
+        }
+        
+        .loading-dots span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .loading-dots span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        
+        @keyframes blink {
+            0%, 20%, 100% {
+                opacity: 0;
+            }
+            50% {
+                opacity: 1;
+            }
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            background: #ffd93d;
+            color: #333;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .maintenance-container {
+                padding: 40px 20px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+            
+            p {
+                font-size: 16px;
+            }
+            
+            .maintenance-icon {
+                font-size: 60px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="maintenance-container">
+        <div class="maintenance-icon">🔧</div>
+        
+        <div class="status-badge">
+            ⚠️ メンテナンス中
+        </div>
+        
+        <h1>システムメンテナンス中</h1>
+        
+        <p>
+            現在、GIS Map Application のメンテナンスを実施しております。<br>
+            ご不便をおかけして申し訳ございません。
+        </p>
+        
+        <div class="schedule">
+            <p><strong>メンテナンス予定</strong></p>
+            <div class="schedule-time">
+                <!-- メンテナンス予定時刻をここに記載 -->
+                しばらくお待ちください<span class="loading-dots"><span>.</span><span>.</span><span>.</span></span>
+            </div>
+        </div>
+        
+        <p>
+            サービスの品質向上のため、システムのアップデートとメンテナンスを行っております。<br>
+            作業完了次第、順次サービスを再開いたします。
+        </p>
+        
+        <div class="contact-info">
+            <p><strong>お問い合わせ</strong></p>
+            <p>お急ぎの場合は下記までご連絡ください</p>
+            <p>Email: <a href="mailto:support@example.com">support@example.com</a></p>
+        </div>
+    </div>
+    
+    <script>
+        // 自動リロード機能（オプション）
+        // 5分ごとにページをリロードしてメンテナンス終了を確認
+        // setTimeout(() => {
+        //     window.location.reload();
+        // }, 5 * 60 * 1000);
+        
+        // 現在時刻を表示（オプション）
+        function updateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleString('ja-JP', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            console.log('メンテナンスページ表示中:', timeString);
+        }
+        
+        updateTime();
+    </script>
+</body>
+</html>

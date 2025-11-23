@@ -1,107 +1,206 @@
+/**
+ * MapCanvasコンポーネント
+ * Google Maps APIを使用したGISマップアプリケーションのメインコンポーネント
+ * 地図表示、図形描画、レイヤー管理、GeoJSONインポート/エクスポート機能を提供
+ */
 import { importLibrary, setOptions } from '@googlemaps/js-api-loader'
 import type { Feature, FeatureCollection } from 'geojson'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { ChangeEvent } from 'react'
 import LayerPanel from './LayerPanel'
+import MenuBar from './MenuBar'
+import CoordinateSearchDialog from './CoordinateSearchDialog'
+import AddressSearchDialog from './AddressSearchDialog'
+import LegendPanel from './LegendPanel'
+import BookmarkDialog from './BookmarkDialog'
+import PrintDialog from './PrintDialog'
 import { convertOverlayToFeature, normalizeGeoJson } from '../utils/geojson'
 import { defaultLayers } from '../data/sampleLayer'
-import type { Layer, LayerCollectionFile, LayerStyle } from '../types/layer'
+import type { Layer, LayerCollectionFile, LayerStyle, LayerTreeItem } from '../types/layer'
+import { 
+  getAllLayers, 
+  addItem, 
+  removeItem, 
+  updateLayer as updateLayerInTree, 
+  updateNode,
+  toggleItemVisibility,
+  moveItem 
+} from '../utils/layerTree'
 
+/** デフォルトの地図中心座標（東京） */
 const DEFAULT_CENTER = { lat: 35.681236, lng: 139.767125 }
+/** Google Maps マップID */
 const MAP_ID = 'PRJ-GIS-WEBAPP'
+/** デフォルトのレイヤースタイル */
 const DEFAULT_LAYER_STYLE: LayerStyle = {
   strokeColor: '#0f60ff',
+  strokeWidth: 2,
+  strokeStyle: 'solid',
   fillColor: '#38bdf8',
   fillOpacity: 0.35,
+  pointSize: 8,
+  pointShape: 'circle',
 }
 
+/**
+ * フィーチャを深くコピー
+ * @param feature - コピー元のフィーチャ
+ * @returns コピーされたフィーチャ
+ */
 const cloneFeature = <T extends Feature>(feature: T): T =>
   JSON.parse(JSON.stringify(feature)) as T
 
-const createInitialLayers = (): Layer[] =>
+/**
+ * 初期レイヤーツリーを作成
+ * @returns 初期化されたレイヤーツリー
+ */
+const createInitialTree = (): LayerTreeItem[] =>
   defaultLayers.map((layer) => ({
     ...layer,
+    type: 'layer' as const,
     features: layer.features.map((feature) => cloneFeature(feature)),
   }))
 
-const generateLayerId = () =>
+/**
+ * ユニークなIDを生成
+ * @returns ユニークなID文字列
+ */
+const generateId = () =>
   typeof crypto !== 'undefined' && 'randomUUID' in crypto
     ? crypto.randomUUID()
-    : `layer-${Date.now()}-${Math.random().toString(16).slice(2)}`
+    : `item-${Date.now()}-${Math.random().toString(16).slice(2)}`
 
+/** ステータスメッセージの型 */
 type Status = {
   type: 'info' | 'success' | 'error'
   message: string
 }
 
+/** デフォルトステータス */
 const DEFAULT_STATUS: Status = {
   type: 'info',
   message: 'Google Maps API の初期化を待機しています…',
 }
 
+/**
+ * MapCanvasコンポーネント
+ * @returns メインマップキャンバスUI
+ */
 const MapCanvas = () => {
+  // 地図コンテナの参照
   const containerRef = useRef<HTMLDivElement | null>(null)
+  // GeoJSONファイル入力の参照
   const geoJsonFileInputRef = useRef<HTMLInputElement | null>(null)
+  // Google Mapsインスタンスの参照
   const mapRef = useRef<google.maps.Map | null>(null)
+  // 描画マネージャーの参照
   const drawingManagerRef = useRef<google.maps.drawing.DrawingManager | null>(null)
+  // 情報ウィンドウの参照
   const infoWindowRef = useRef<google.maps.InfoWindow | null>(null)
+  // データレイヤーイベントリスナーの配列
   const dataLayerListenersRef = useRef<google.maps.MapsEventListener[]>([])
-  const layersRef = useRef<Layer[]>(createInitialLayers())
-  const [layers, setLayers] = useState<Layer[]>(layersRef.current)
-  const [activeLayerId, setActiveLayerId] = useState<string | null>(
-    layersRef.current[0]?.id ?? null,
-  )
+  // レイヤーツリーの参照（最新状態を保持）
+  const treeRef = useRef<LayerTreeItem[]>(createInitialTree())
+  // レイヤーツリーの状態
+  const [tree, setTree] = useState<LayerTreeItem[]>(treeRef.current)
+  // 現在選択されているレイヤーID
+  const [activeLayerId, setActiveLayerId] = useState<string | null>(() => {
+    const firstLayer = getAllLayers(treeRef.current)[0]
+    return firstLayer?.id ?? null
+  })
+  // ステータスメッセージの状態
   const [status, setStatus] = useState<Status>(DEFAULT_STATUS)
+  // レイヤーパネルの表示/非表示状態
+  const [isLayerPanelVisible, setIsLayerPanelVisible] = useState(false)
+  // 緒度経度検索ダイアログの表示状態
+  const [isCoordinateSearchVisible, setIsCoordinateSearchVisible] = useState(false)
+  // 住所検索ダイアログの表示状態
+  const [isAddressSearchVisible, setIsAddressSearchVisible] = useState(false)
+  // 凡例パネルの表示状態
+  const [isLegendVisible, setIsLegendVisible] = useState(false)
+  // ブックマークダイアログの表示状態
+  const [isBookmarkVisible, setIsBookmarkVisible] = useState(false)
+  // 印刷ダイアログの表示状態
+  const [isPrintVisible, setIsPrintVisible] = useState(false)
+  // 検索結果の一時マーカー
+  const searchMarkerRef = useRef<google.maps.Marker | null>(null)
 
+  // 環境変数からGoogle Maps APIキーを取得
   const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY
 
-  useEffect(() => {
-    layersRef.current = layers
-  }, [layers])
+  // ツリーから全レイヤーを抽出（メモ化）
+  const layers = useMemo(() => getAllLayers(tree), [tree])
 
+  // ツリーが変更されたらtreeRefを更新
   useEffect(() => {
+    treeRef.current = tree
+  }, [tree])
+
+  // レイヤーが変更されたらアクティブレイヤーを調整
+  useEffect(() => {
+    // レイヤーがない場合はアクティブレイヤーをクリア
     if (!layers.length) {
       setActiveLayerId(null)
       return
     }
+    // アクティブレイヤーが無いか、存在しない場合は最初のレイヤーを選択
     if (!activeLayerId || !layers.some((layer) => layer.id === activeLayerId)) {
       setActiveLayerId(layers[0].id)
     }
   }, [layers, activeLayerId])
 
+  // 現在アクティブなレイヤーを取得（メモ化）
   const activeLayer = useMemo(
     () => layers.find((layer) => layer.id === activeLayerId) ?? null,
     [layers, activeLayerId],
   )
 
+  /**
+   * データレイヤーのイベントリスナーを全て解除
+   */
   const detachDataLayerListeners = useCallback(() => {
+    // 登録されている全リスナーを削除
     dataLayerListenersRef.current.forEach((listener) => listener.remove())
+    // リスナー配列を空にする
     dataLayerListenersRef.current = []
   }, [])
 
+  /**
+   * 地図上の全データレイヤーフィーチャを削除
+   */
   const clearDataLayer = useCallback(() => {
     const map = mapRef.current
     if (!map) {
       return
     }
+    // 地図のデータレイヤーから全フィーチャを削除
     map.data.forEach((feature: google.maps.Data.Feature) => {
       map.data.remove(feature)
     })
   }, [])
 
+  /**
+   * 地図上のレイヤーを再構築
+   * 全フィーチャをクリアして、表示すべきレイヤーのみを再描画
+   */
   const rebuildMapLayers = useCallback(
     (targetLayers: Layer[]) => {
       const map = mapRef.current
       if (!map) {
         return
       }
+      // 既存のデータレイヤーをクリア
       clearDataLayer()
+      // 各レイヤーを処理
       targetLayers.forEach((layer) => {
+        // 非表示またはフィーチャがない場合はスキップ
         if (!layer.visible || !layer.features.length) {
           return
         }
+        // GeoJSON FeatureCollectionを作成
         const collection: FeatureCollection = {
           type: 'FeatureCollection',
+          // 各フィーチャにレイヤー情報を追加
           features: layer.features.map((feature) => ({
             ...feature,
             properties: {
@@ -124,10 +223,15 @@ const MapCanvas = () => {
     rebuildMapLayers(layers)
   }, [layers, rebuildMapLayers])
 
+  /**
+   * サンプルレイヤー読み込み
+   * 初期状態のサンプルデータを読み込む
+   */
   const loadSampleLayers = useCallback(() => {
-    const sample = createInitialLayers()
-    setLayers(sample)
-    setActiveLayerId(sample[0]?.id ?? null)
+    const sample = createInitialTree()
+    setTree(sample)
+    const allLayers = getAllLayers(sample)
+    setActiveLayerId(allLayers[0]?.id ?? null)
     setStatus({ type: 'success', message: 'サンプルレイヤーを読み込みました。' })
   }, [])
 
@@ -141,22 +245,68 @@ const MapCanvas = () => {
 
     map.data.setStyle((feature: google.maps.Data.Feature) => {
       const layerId = feature.getProperty('layerId') as string | undefined
-      const layer = layersRef.current.find((entry) => entry.id === layerId)
+      const allLayers = getAllLayers(treeRef.current)
+      const layer = allLayers.find((entry) => entry.id === layerId)
       const strokeColor =
         (feature.getProperty('strokeColor') as string) ?? layer?.style.strokeColor ?? DEFAULT_LAYER_STYLE.strokeColor
+      const strokeWidth =
+        (feature.getProperty('strokeWidth') as number) ?? layer?.style.strokeWidth ?? DEFAULT_LAYER_STYLE.strokeWidth
       const fillColor =
         (feature.getProperty('fillColor') as string) ?? layer?.style.fillColor ?? DEFAULT_LAYER_STYLE.fillColor
       const fillOpacity =
         (feature.getProperty('fillOpacity') as number) ?? layer?.style.fillOpacity ?? DEFAULT_LAYER_STYLE.fillOpacity
+      const pointSize =
+        (feature.getProperty('pointSize') as number) ?? layer?.style.pointSize ?? DEFAULT_LAYER_STYLE.pointSize
+
+      // アイコンの作成（ポイントの場合）
+      const geometryType = feature.getGeometry()?.getType()
+      let icon: google.maps.Icon | google.maps.Symbol | undefined
+
+      if (geometryType === 'Point') {
+        const pointShape = layer?.style.pointShape ?? DEFAULT_LAYER_STYLE.pointShape
+        
+        switch (pointShape) {
+          case 'circle':
+            icon = {
+              path: google.maps.SymbolPath.CIRCLE,
+              scale: pointSize / 2,
+              fillColor: fillColor,
+              fillOpacity: fillOpacity,
+              strokeColor: strokeColor,
+              strokeWeight: strokeWidth,
+            }
+            break
+          case 'square':
+            // 正方形のSVGパス
+            const size = pointSize
+            icon = {
+              path: `M -${size/2} -${size/2} L ${size/2} -${size/2} L ${size/2} ${size/2} L -${size/2} ${size/2} Z`,
+              fillColor: fillColor,
+              fillOpacity: fillOpacity,
+              strokeColor: strokeColor,
+              strokeWeight: strokeWidth,
+            }
+            break
+          case 'triangle':
+            // 三角形のSVGパス
+            const s = pointSize
+            icon = {
+              path: `M 0 -${s/1.5} L ${s/1.5} ${s/2} L -${s/1.5} ${s/2} Z`,
+              fillColor: fillColor,
+              fillOpacity: fillOpacity,
+              strokeColor: strokeColor,
+              strokeWeight: strokeWidth,
+            }
+            break
+        }
+      }
 
       return {
         fillColor,
         strokeColor,
-        strokeWeight: 2,
+        strokeWeight: strokeWidth,
         fillOpacity,
-        icon: {
-          url: 'https://maps.gstatic.com/mapfiles/api-3/images/spotlight-poi3.png',
-        },
+        icon,
       }
     })
 
@@ -195,7 +345,7 @@ const MapCanvas = () => {
 
   const handleOverlayComplete = useCallback(
     (event: google.maps.drawing.OverlayCompleteEvent) => {
-      const targetLayer = layersRef.current.find((layer) => layer.id === activeLayerId)
+      const targetLayer = layers.find((layer) => layer.id === activeLayerId)
       if (!targetLayer) {
         setStatus({ type: 'error', message: '図形を追加するレイヤーが選択されていません。' })
         event.overlay?.setMap(null)
@@ -217,17 +367,15 @@ const MapCanvas = () => {
         },
       }
 
-      setLayers((prev) =>
-        prev.map((layer) =>
-          layer.id === targetLayer.id
-            ? { ...layer, features: [...layer.features, featureWithMeta] }
-            : layer,
-        ),
+      setTree((prev) =>
+        updateLayerInTree(prev, targetLayer.id, {
+          features: [...targetLayer.features, featureWithMeta],
+        }),
       )
       event.overlay?.setMap(null)
       setStatus({ type: 'success', message: `${targetLayer.name} に図形を追加しました。` })
     },
-    [activeLayerId],
+    [activeLayerId, layers],
   )
 
   const initializeDrawingManager = useCallback(() => {
@@ -317,7 +465,7 @@ const MapCanvas = () => {
 
         attachDataLayerInteractions()
         initializeDrawingManager()
-        rebuildMapLayers(layersRef.current)
+        rebuildMapLayers(layers)
         setStatus({ type: 'success', message: '地図の準備が整いました。自由に作図してください。' })
       })
       .catch((error: unknown) => {
@@ -333,6 +481,10 @@ const MapCanvas = () => {
     }
   }, [apiKey, attachDataLayerInteractions, detachDataLayerListeners, initializeDrawingManager, rebuildMapLayers])
 
+  /**
+   * GeoJSON保存
+   * 選択中のレイヤーをGeoJSON形式でエクスポート
+   */
   const handleSaveGeoJson = useCallback(() => {
     if (!activeLayer) {
       setStatus({ type: 'error', message: '保存対象のレイヤーが選択されていません。' })
@@ -385,12 +537,10 @@ const MapCanvas = () => {
         }
 
         const features = Array.isArray(normalized) ? normalized : [normalized]
-        setLayers((prev) =>
-          prev.map((entry) =>
-            entry.id === activeLayer.id
-              ? { ...entry, features: [...entry.features, ...features] }
-              : entry,
-          ),
+        setTree((prev) =>
+          updateLayerInTree(prev, activeLayer.id, {
+            features: [...activeLayer.features, ...features],
+          }),
         )
         setStatus({ type: 'success', message: `${activeLayer.name} に ${features.length} 件のフィーチャを追加しました。` })
       } catch (error) {
@@ -406,76 +556,106 @@ const MapCanvas = () => {
     reader.readAsText(file)
   }, [activeLayer])
 
+  /**
+   * レイヤークリア
+   * 選択中のレイヤーの全フィーチャを削除（確認ダイアログ付き）
+   */
   const handleClearLayer = useCallback(() => {
     if (!activeLayer) {
       setStatus({ type: 'error', message: 'クリア対象のレイヤーが選択されていません。' })
       return
     }
-    setLayers((prev) =>
-      prev.map((entry) => (entry.id === activeLayer.id ? { ...entry, features: [] } : entry)),
+    
+    // 確認ダイアログを表示
+    const confirmed = window.confirm(`「${activeLayer.name}」の全てのフィーチャを削除しますか?この操作は取り消せません。`)
+    if (!confirmed) {
+      return
+    }
+    
+    setTree((prev) =>
+      updateLayerInTree(prev, activeLayer.id, { features: [] }),
     )
     setStatus({ type: 'info', message: `${activeLayer.name} をクリアしました。` })
   }, [activeLayer])
 
-  const handleAddLayer = useCallback((name: string) => {
-    const layerName = name || `レイヤー${layersRef.current.length + 1}`
-    const newLayer: Layer = {
-      id: generateLayerId(),
+  const handleAddLayer = useCallback((name: string, parentId: string | null) => {
+    const allLayers = getAllLayers(treeRef.current)
+    const layerName = name || `レイヤー${allLayers.length + 1}`
+    const newLayer: LayerTreeItem = {
+      id: generateId(),
       name: layerName,
       visible: true,
+      type: 'layer',
       style: { ...DEFAULT_LAYER_STYLE },
       features: [],
     }
-    setLayers((prev) => [...prev, newLayer])
+    setTree((prev) => addItem(prev, parentId, newLayer))
     setActiveLayerId(newLayer.id)
     setStatus({ type: 'success', message: `${layerName} を追加しました。` })
   }, [])
 
-  const handleDeleteLayer = useCallback((layerId: string) => {
-    setLayers((prev) => prev.filter((layer) => layer.id !== layerId))
-    setStatus({ type: 'info', message: 'レイヤーを削除しました。' })
-    setActiveLayerId((current) => (current === layerId ? null : current))
+  const handleAddNode = useCallback((name: string, parentId: string | null) => {
+    const nodeName = name || `ノード${tree.length + 1}`
+    const newNode: LayerTreeItem = {
+      id: generateId(),
+      name: nodeName,
+      visible: true,
+      type: 'node',
+      children: [],
+    }
+    setTree((prev) => addItem(prev, parentId, newNode))
+    setStatus({ type: 'success', message: `${nodeName} を追加しました。` })
+  }, [tree.length])
+
+  const handleDeleteItem = useCallback((itemId: string) => {
+    setTree((prev) => removeItem(prev, itemId))
+    setStatus({ type: 'info', message: 'アイテムを削除しました。' })
+    setActiveLayerId((current) => (current === itemId ? null : current))
   }, [])
 
-  const handleToggleLayer = useCallback((layerId: string) => {
-    setLayers((prev) =>
-      prev.map((layer) => (layer.id === layerId ? { ...layer, visible: !layer.visible } : layer)),
-    )
+  const handleToggleItem = useCallback((itemId: string) => {
+    setTree((prev) => toggleItemVisibility(prev, itemId))
   }, [])
 
-  const handleUpdateLayer = useCallback(
+  const handleUpdateLayerData = useCallback(
     (layerId: string, updates: { name?: string; style?: Partial<LayerStyle> }) => {
-      setLayers((prev) =>
-        prev.map((layer) =>
-          layer.id === layerId
-            ? {
-                ...layer,
-                name: updates.name ?? layer.name,
-                style: updates.style ? { ...layer.style, ...updates.style } : layer.style,
-              }
-            : layer,
-        ),
-      )
+      setTree((prev) => {
+        const layer = getAllLayers(prev).find((l) => l.id === layerId)
+        if (!layer) return prev
+        
+        return updateLayerInTree(prev, layerId, {
+          name: updates.name ?? layer.name,
+          style: updates.style ? { ...layer.style, ...updates.style } : layer.style,
+        })
+      })
+    },
+    [],
+  )
+
+  const handleUpdateNodeData = useCallback((nodeId: string, updates: { name?: string }) => {
+    setTree((prev) => updateNode(prev, nodeId, updates))
+  }, [])
+
+  const handleMoveItem = useCallback(
+    (sourceId: string, targetParentId: string | null, targetIndex?: number) => {
+      setTree((prev) => moveItem(prev, sourceId, targetParentId, targetIndex))
+      setStatus({ type: 'success', message: 'アイテムを移動しました。' })
     },
     [],
   )
 
   const handleSaveLayerList = useCallback(() => {
-    if (!layersRef.current.length) {
-      setStatus({ type: 'info', message: '保存対象のレイヤーがありません。' })
+    // 最新のtreeステートを使用してノード情報も含めて保存
+    const currentTree = treeRef.current
+    if (!currentTree.length) {
+      setStatus({ type: 'info', message: '保存対象のツリーがありません。' })
       return
     }
 
     const payload: LayerCollectionFile = {
-      version: '1.0',
+      version: '2.0',
       exportedAt: new Date().toISOString(),
-      layers: layersRef.current.map((layer) => ({
-        id: layer.id,
-        name: layer.name,
-        visible: layer.visible,
-        style: layer.style,
-        features: layer.features,
-      })),
+      tree: currentTree,
     }
 
     const serialized = JSON.stringify(payload, null, 2)
@@ -498,28 +678,41 @@ const MapCanvas = () => {
         if (typeof text !== 'string') {
           throw new Error('ファイルを読み取れませんでした。')
         }
-        const parsed = JSON.parse(text) as Partial<LayerCollectionFile>
-        if (!parsed.layers || !Array.isArray(parsed.layers)) {
-          throw new Error('レイヤー一覧ファイルの形式が不正です。')
+        const parsed = JSON.parse(text) as any
+        
+        // バージョン2.0の形式をチェック
+        if (parsed.version === '2.0' && parsed.tree && Array.isArray(parsed.tree)) {
+          setTree(parsed.tree as LayerTreeItem[])
+          const allLayers = getAllLayers(parsed.tree)
+          setActiveLayerId(allLayers[0]?.id ?? null)
+          setStatus({ type: 'success', message: `ツリーを読み込みました。` })
+        } else if (parsed.layers && Array.isArray(parsed.layers)) {
+          // 旧バージョン(1.0)の互換性
+          const restoredTree: LayerTreeItem[] = parsed.layers.map((layer: any, index: number) => ({
+            id: layer.id ?? generateId(),
+            name: layer.name ?? `インポートレイヤー${index + 1}`,
+            visible: typeof layer.visible === 'boolean' ? layer.visible : true,
+            type: 'layer' as const,
+            style: {
+              strokeColor: layer.style?.strokeColor ?? DEFAULT_LAYER_STYLE.strokeColor,
+              strokeWidth: layer.style?.strokeWidth ?? DEFAULT_LAYER_STYLE.strokeWidth,
+              strokeStyle: layer.style?.strokeStyle ?? DEFAULT_LAYER_STYLE.strokeStyle,
+              fillColor: layer.style?.fillColor ?? DEFAULT_LAYER_STYLE.fillColor,
+              fillOpacity: layer.style?.fillOpacity ?? DEFAULT_LAYER_STYLE.fillOpacity,
+              pointSize: layer.style?.pointSize ?? DEFAULT_LAYER_STYLE.pointSize,
+              pointShape: layer.style?.pointShape ?? DEFAULT_LAYER_STYLE.pointShape,
+            },
+            features: Array.isArray(layer.features)
+              ? layer.features.map((feature: Feature) => cloneFeature(feature))
+              : [],
+          }))
+          setTree(restoredTree)
+          const allLayers = getAllLayers(restoredTree)
+          setActiveLayerId(allLayers[0]?.id ?? null)
+          setStatus({ type: 'success', message: `レイヤーを ${allLayers.length} 件読み込みました。` })
+        } else {
+          throw new Error('ファイルの形式が不正です。')
         }
-
-        const restored: Layer[] = parsed.layers.map((layer, index) => ({
-          id: layer.id ?? generateLayerId(),
-          name: layer.name ?? `インポートレイヤー${index + 1}`,
-          visible: typeof layer.visible === 'boolean' ? layer.visible : true,
-          style: {
-            strokeColor: layer.style?.strokeColor ?? DEFAULT_LAYER_STYLE.strokeColor,
-            fillColor: layer.style?.fillColor ?? DEFAULT_LAYER_STYLE.fillColor,
-            fillOpacity: layer.style?.fillOpacity ?? DEFAULT_LAYER_STYLE.fillOpacity,
-          },
-          features: Array.isArray(layer.features)
-            ? layer.features.map((feature) => cloneFeature(feature))
-            : [],
-        }))
-
-        setLayers(restored)
-        setActiveLayerId(restored[0]?.id ?? null)
-        setStatus({ type: 'success', message: `レイヤー一覧を ${restored.length} 件読み込みました。` })
       } catch (error) {
         const message = error instanceof Error ? error.message : 'レイヤー一覧の読み込みに失敗しました。'
         setStatus({ type: 'error', message })
@@ -531,53 +724,256 @@ const MapCanvas = () => {
 
   const handleSelectLayer = useCallback((layerId: string) => {
     setActiveLayerId(layerId)
-    const layer = layersRef.current.find((entry) => entry.id === layerId)
+    const layer = layers.find((entry) => entry.id === layerId)
     if (layer) {
       setStatus({ type: 'info', message: `${layer.name} を編集中です。` })
     }
-  }, [])
+  }, [layers])
 
+  /**
+   * GeoJSONインポート
+   * ファイル選択ダイアログを開く
+   */
   const triggerGeoJsonDialog = useCallback(() => {
     geoJsonFileInputRef.current?.click()
+  }, [])
+
+  const handleToggleLayerPanel = useCallback(() => {
+    setIsLayerPanelVisible((prev) => !prev)
+  }, [])
+
+  /**
+   * ブックマークダイアログを表示
+   */
+  const handleShowBookmark = useCallback(() => {
+    setIsBookmarkVisible(true)
+  }, [])
+
+  /**
+   * ブックマークを選択して地図を移動
+   */
+  const handleSelectBookmark = useCallback((lat: number, lng: number, zoom: number) => {
+    const map = mapRef.current
+    if (!map) {
+      return
+    }
+
+    // 地図を指定座標に移動
+    map.setCenter({ lat, lng })
+    map.setZoom(zoom)
+
+    setStatus({ 
+      type: 'success', 
+      message: 'ブックマークの位置に移動しました。' 
+    })
+  }, [])
+
+  /**
+   * 緯度経度検索ダイアログを表示
+   */
+  const handleShowCoordinateSearch = useCallback(() => {
+    setIsCoordinateSearchVisible(true)
+  }, [])
+
+  /**
+   * 緯度経度検索実行
+   * @param lat - 緯度
+   * @param lng - 経度
+   */
+  const handleCoordinateSearch = useCallback((lat: number, lng: number) => {
+    const map = mapRef.current
+    if (!map) {
+      return
+    }
+
+    // 地図を指定座標に移動
+    const position = { lat, lng }
+    map.setCenter(position)
+    map.setZoom(15)
+
+    // 既存のマーカーを削除
+    if (searchMarkerRef.current) {
+      searchMarkerRef.current.setMap(null)
+    }
+
+    // 新しいマーカーを表示
+    searchMarkerRef.current = new google.maps.Marker({
+      position,
+      map,
+      title: `緯度: ${lat.toFixed(6)}, 経度: ${lng.toFixed(6)}`,
+      animation: google.maps.Animation.DROP,
+    })
+
+    setStatus({ 
+      type: 'success', 
+      message: `緯度: ${lat.toFixed(6)}, 経度: ${lng.toFixed(6)} に移動しました。` 
+    })
+  }, [])
+
+  /**
+   * 住所検索ダイアログを表示
+   */
+  const handleShowAddressSearch = useCallback(() => {
+    setIsAddressSearchVisible(true)
+  }, [])
+
+  /**
+   * 住所検索実行
+   * @param lat - 緒度
+   * @param lng - 経度
+   * @param address - 検索した住所
+   */
+  const handleAddressSearch = useCallback((lat: number, lng: number, address: string) => {
+    const map = mapRef.current
+    if (!map) {
+      return
+    }
+
+    // 地図を指定座標に移動
+    const position = { lat, lng }
+    map.setCenter(position)
+    map.setZoom(16)
+
+    // 既存のマーカーを削除
+    if (searchMarkerRef.current) {
+      searchMarkerRef.current.setMap(null)
+    }
+
+    // 新しいマーカーを表示
+    searchMarkerRef.current = new google.maps.Marker({
+      position,
+      map,
+      title: address,
+      animation: google.maps.Animation.DROP,
+    })
+
+    // 情報ウィンドウを表示
+    if (infoWindowRef.current) {
+      infoWindowRef.current.close()
+    }
+    infoWindowRef.current = new google.maps.InfoWindow({
+      content: `<div style="padding: 8px;"><strong>${address}</strong><br>緒度: ${lat.toFixed(6)}<br>経度: ${lng.toFixed(6)}</div>`,
+    })
+    infoWindowRef.current.open(map, searchMarkerRef.current)
+
+    setStatus({ 
+      type: 'success', 
+      message: `「${address}」を見つけました。` 
+    })
+  }, [])
+
+  /**
+   * 凡例パネルを表示/非表示
+   */
+  const handleShowLegend = useCallback(() => {
+    setIsLegendVisible((prev) => !prev)
+  }, [])
+
+  /**
+   * 印刷ダイアログを表示
+   */
+  const handleShowPrint = useCallback(() => {
+    setIsPrintVisible(true)
+  }, [])
+
+  /**
+   * 印刷実行
+   */
+  const handlePrint = useCallback((_title: string, _includeDate: boolean, _includeLegend: boolean) => {
+    // 印刷情報をステータスに設定
+    setStatus({ 
+      type: 'info', 
+      message: `印刷プレビューを開きます。ブラウザの印刷ダイアログからPDFとして保存できます。` 
+    })
+    
+    // 印刷ダイアログを表示
+    setTimeout(() => {
+      window.print()
+    }, 100)
   }, [])
 
   return (
     <div className="map-wrapper">
       <div className="map-canvas" ref={containerRef} aria-label="GIS マップ" role="application" />
 
-      <LayerPanel
-        layers={layers}
-        activeLayerId={activeLayerId}
-        onSelectLayer={handleSelectLayer}
-        onAddLayer={handleAddLayer}
-        onDeleteLayer={handleDeleteLayer}
-        onToggleLayer={handleToggleLayer}
-        onUpdateLayer={handleUpdateLayer}
+      <MenuBar
+        onToggleLayerPanel={handleToggleLayerPanel}
         onSaveLayerList={handleSaveLayerList}
         onLoadLayerList={handleLoadLayerList}
+        onLoadGeoJson={triggerGeoJsonDialog}
+        onSaveGeoJson={handleSaveGeoJson}
+        onClearLayer={handleClearLayer}
+        onLoadSample={loadSampleLayers}
+        onShowBookmark={handleShowBookmark}
+        onShowCoordinateSearch={handleShowCoordinateSearch}
+        onShowAddressSearch={handleShowAddressSearch}
+        onPrint={handleShowPrint}
+        onShowLegend={handleShowLegend}
       />
 
-      <div className="map-toolbar">
-        <button type="button" onClick={handleSaveGeoJson}>
-          選択レイヤーを保存
-        </button>
-        <button type="button" onClick={triggerGeoJsonDialog}>
-          GeoJSON を読み込み
-        </button>
-        <button type="button" onClick={handleClearLayer}>
-          選択レイヤーをクリア
-        </button>
-        <button type="button" onClick={loadSampleLayers}>
-          サンプル読込
-        </button>
-        <input
-          type="file"
-          accept=".json,.geojson,application/geo+json"
-          ref={geoJsonFileInputRef}
-          onChange={handleFileChange}
-          className="file-input"
+      {isLayerPanelVisible && (
+        <LayerPanel
+          tree={tree}
+          activeLayerId={activeLayerId}
+          onSelectLayer={handleSelectLayer}
+          onAddLayer={handleAddLayer}
+          onAddNode={handleAddNode}
+          onDeleteItem={handleDeleteItem}
+          onToggleItem={handleToggleItem}
+          onUpdateLayer={handleUpdateLayerData}
+          onUpdateNode={handleUpdateNodeData}
+          onMoveItem={handleMoveItem}
+          onClose={handleToggleLayerPanel}
         />
-      </div>
+      )}
+
+      {isCoordinateSearchVisible && (
+        <CoordinateSearchDialog
+          onClose={() => setIsCoordinateSearchVisible(false)}
+          onSearch={handleCoordinateSearch}
+        />
+      )}
+
+      {isAddressSearchVisible && (
+        <AddressSearchDialog
+          onClose={() => setIsAddressSearchVisible(false)}
+          onSearch={handleAddressSearch}
+        />
+      )}
+
+      {isLegendVisible && (
+        <LegendPanel
+          layers={layers}
+          onClose={() => setIsLegendVisible(false)}
+        />
+      )}
+
+      {isBookmarkVisible && (
+        <BookmarkDialog
+          currentPosition={mapRef.current ? { 
+            lat: mapRef.current.getCenter()?.lat() ?? DEFAULT_CENTER.lat, 
+            lng: mapRef.current.getCenter()?.lng() ?? DEFAULT_CENTER.lng 
+          } : DEFAULT_CENTER}
+          currentZoom={mapRef.current?.getZoom() ?? 12}
+          onClose={() => setIsBookmarkVisible(false)}
+          onSelectBookmark={handleSelectBookmark}
+        />
+      )}
+
+      {isPrintVisible && (
+        <PrintDialog
+          onClose={() => setIsPrintVisible(false)}
+          onPrint={handlePrint}
+        />
+      )}
+
+      <input
+        type="file"
+        accept=".json,.geojson,application/geo+json"
+        ref={geoJsonFileInputRef}
+        onChange={handleFileChange}
+        className="file-input"
+      />
 
       <p className={`status-banner status-${status.type}`}>{status.message}</p>
     </div>
