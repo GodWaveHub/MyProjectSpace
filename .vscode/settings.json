@@ -44,6 +44,7 @@
         "git": true,
         "npm": true,
         "Get-ChildItem": true,
+        "Remove-Item": true,
         "python": true,
         "Rename-Item": true,
         "print": true,
