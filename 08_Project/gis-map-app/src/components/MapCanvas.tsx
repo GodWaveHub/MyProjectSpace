@@ -7,6 +7,7 @@ import { importLibrary, setOptions } from '@googlemaps/js-api-loader'
 import type { Feature, FeatureCollection } from 'geojson'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { ChangeEvent } from 'react'
+import type { User } from 'firebase/auth'
 import LayerPanel from './LayerPanel'
 import MenuBar from './MenuBar'
 import CoordinateSearchDialog from './CoordinateSearchDialog'
@@ -26,6 +27,7 @@ import {
   toggleItemVisibility,
   moveItem 
 } from '../utils/layerTree'
+import { onAuthChange, loginWithGoogle, logoutUser } from '../lib/auth'
 
 /** デフォルトの地図中心座標（東京） */
 const DEFAULT_CENTER = { lat: 35.681236, lng: 139.767125 }
@@ -124,6 +126,10 @@ const MapCanvas = () => {
   const [isPrintVisible, setIsPrintVisible] = useState(false)
   // 検索結果の一時マーカー
   const searchMarkerRef = useRef<google.maps.Marker | null>(null)
+  // 認証ユーザー状態
+  const [user, setUser] = useState<User | null>(null)
+  // 認証初期化完了フラグ
+  const [authInitialized, setAuthInitialized] = useState(false)
 
   // 環境変数からGoogle Maps APIキーを取得
   const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY
@@ -135,6 +141,91 @@ const MapCanvas = () => {
   useEffect(() => {
     treeRef.current = tree
   }, [tree])
+
+  // 認証状態の監視
+  useEffect(() => {
+    let hasTriedAutoLogin = false
+    
+    // 認証状態の変更を監視
+    const unsubscribe = onAuthChange((currentUser) => {
+      const wasLoggedIn = user !== null
+      setUser(currentUser)
+      
+      if (currentUser) {
+        setStatus({
+          type: 'success',
+          message: `ログイン成功: ${currentUser.email}`,
+        })
+        setAuthInitialized(true)
+      } else if (authInitialized && wasLoggedIn) {
+        // ログアウト時の処理
+        setStatus({
+          type: 'info',
+          message: 'ログアウトしました',
+        })
+        
+        // レイヤー情報をクリア
+        const newTree = createInitialTree()
+        setTree(newTree)
+        treeRef.current = newTree
+        
+        // 地図上のデータをクリア
+        const map = mapRef.current
+        if (map) {
+          map.data.forEach((feature: google.maps.Data.Feature) => {
+            map.data.remove(feature)
+          })
+        }
+        
+        // すべてのダイアログを閉じる
+        setIsLayerPanelVisible(false)
+        setIsCoordinateSearchVisible(false)
+        setIsAddressSearchVisible(false)
+        setIsLegendVisible(false)
+        setIsBookmarkVisible(false)
+        setIsPrintVisible(false)
+        
+        // 検索マーカーを削除
+        if (searchMarkerRef.current) {
+          searchMarkerRef.current.setMap(null)
+          searchMarkerRef.current = null
+        }
+      } else if (!authInitialized && !currentUser && !hasTriedAutoLogin) {
+        // 初回マウント時に自動ログインを試行（一度だけ）
+        hasTriedAutoLogin = true
+        setTimeout(() => {
+          loginWithGoogle()
+            .then(() => {
+              // ログイン成功は onAuthChange で処理
+            })
+            .catch((error) => {
+              // ポップアップブロックやキャンセルのエラーは静かに処理
+              const errorCode = error.code || ''
+              if (errorCode === 'auth/popup-blocked' || errorCode === 'auth/cancelled-popup-request') {
+                setStatus({
+                  type: 'info',
+                  message: 'メニューからログインしてください',
+                })
+              } else if (error.message.includes('ポップアップ')) {
+                setStatus({
+                  type: 'info',
+                  message: 'メニューからログインしてください',
+                })
+              } else {
+                console.error('Auto login error:', error)
+                setStatus({
+                  type: 'info',
+                  message: 'メニューからログインしてください',
+                })
+              }
+              setAuthInitialized(true)
+            })
+        }, 500) // ポップアップブロック回避のため少し遅延
+      }
+    })
+
+    return () => unsubscribe()
+  }, [authInitialized, user])
 
   // レイヤーが変更されたらアクティブレイヤーを調整
   useEffect(() => {
@@ -892,6 +983,36 @@ const MapCanvas = () => {
     }, 100)
   }, [])
 
+  /**
+   * ログイン処理
+   */
+  const handleLogin = useCallback(async () => {
+    try {
+      await loginWithGoogle()
+      // 成功時は onAuthChange で処理
+    } catch (error: any) {
+      setStatus({
+        type: 'error',
+        message: `ログインエラー: ${error.message}`,
+      })
+    }
+  }, [])
+
+  /**
+   * ログアウト処理
+   */
+  const handleLogout = useCallback(async () => {
+    try {
+      await logoutUser()
+      // 成功時は onAuthChange で処理
+    } catch (error: any) {
+      setStatus({
+        type: 'error',
+        message: `ログアウトエラー: ${error.message}`,
+      })
+    }
+  }, [])
+
   return (
     <div className="map-wrapper">
       <div className="map-canvas" ref={containerRef} aria-label="GIS マップ" role="application" />
@@ -909,6 +1030,9 @@ const MapCanvas = () => {
         onShowAddressSearch={handleShowAddressSearch}
         onPrint={handleShowPrint}
         onShowLegend={handleShowLegend}
+        user={user}
+        onLogin={handleLogin}
+        onLogout={handleLogout}
       />
 
       {isLayerPanelVisible && (

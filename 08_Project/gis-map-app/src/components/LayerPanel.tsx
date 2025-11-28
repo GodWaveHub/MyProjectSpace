@@ -3,8 +3,8 @@
  * レイヤーとノードのツリー構造を表示・編集
  * ドラッグ&ドロップによる並べ替え、表示/非表示の切り替え、スタイル編集が可能
  */
-import { useMemo, useState } from 'react'
-import type { DragEvent } from 'react'
+import { useMemo, useState, useRef } from 'react'
+import type { DragEvent, TouchEvent } from 'react'
 import type { LayerStyle, LayerTreeItem } from '../types/layer'
 import { flattenTree, getAllLayers } from '../utils/layerTree'
 
@@ -49,6 +49,12 @@ const LayerPanel = ({
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set())
   const [draggedItem, setDraggedItem] = useState<string | null>(null)
   const [dropTarget, setDropTarget] = useState<{ id: string | null; position: 'before' | 'after' | 'inside' } | null>(null)
+  
+  // タッチドラッグ用の状態
+  const touchStartY = useRef<number>(0)
+  const touchCurrentY = useRef<number>(0)
+  const longPressTimer = useRef<number | null>(null)
+  const isDraggingTouch = useRef<boolean>(false)
 
   const allLayers = useMemo(() => getAllLayers(tree), [tree])
   const totalFeatures = useMemo(
@@ -202,6 +208,110 @@ const LayerPanel = ({
     setDropTarget(null)
   }
 
+  /**
+   * タッチ開始時の処理（長押し判定）
+   */
+  const handleTouchStart = (e: TouchEvent, itemId: string) => {
+    const touch = e.touches[0]
+    touchStartY.current = touch.clientY
+    touchCurrentY.current = touch.clientY
+    
+    // 長押し判定（500ms）
+    longPressTimer.current = setTimeout(() => {
+      isDraggingTouch.current = true
+      setDraggedItem(itemId)
+      // 振動フィードバック（対応デバイスのみ）
+      if (navigator.vibrate) {
+        navigator.vibrate(50)
+      }
+    }, 500)
+  }
+
+  /**
+   * タッチ移動時の処理
+   */
+  const handleTouchMove = (e: TouchEvent) => {
+    if (!isDraggingTouch.current || !draggedItem) {
+      // ドラッグ開始前に大きく移動した場合は長押しキャンセル
+      const touch = e.touches[0]
+      const deltaY = Math.abs(touch.clientY - touchStartY.current)
+      if (deltaY > 10 && longPressTimer.current) {
+        clearTimeout(longPressTimer.current)
+        longPressTimer.current = null
+      }
+      return
+    }
+
+    e.preventDefault()
+    const touch = e.touches[0]
+    touchCurrentY.current = touch.clientY
+
+    // タッチ位置の下にある要素を取得
+    const element = document.elementFromPoint(touch.clientX, touch.clientY)
+    if (!element) return
+
+    // 最も近いツリーアイテム要素を探す
+    const treeItem = element.closest('.layer-tree__item') as HTMLElement
+    if (!treeItem) {
+      setDropTarget(null)
+      return
+    }
+
+    // data-item-id から対象アイテムのIDを取得
+    const targetId = treeItem.dataset.itemId
+    const targetType = treeItem.dataset.itemType as 'layer' | 'node' | undefined
+    
+    if (!targetId || !targetType || targetId === draggedItem) {
+      return
+    }
+
+    // ドロップ位置を計算
+    const rect = treeItem.getBoundingClientRect()
+    const y = touch.clientY - rect.top
+    const height = rect.height
+
+    if (targetType === 'node') {
+      if (y < height * 0.25) {
+        setDropTarget({ id: targetId, position: 'before' })
+      } else if (y > height * 0.75) {
+        setDropTarget({ id: targetId, position: 'after' })
+      } else {
+        setDropTarget({ id: targetId, position: 'inside' })
+      }
+    } else {
+      if (y < height * 0.5) {
+        setDropTarget({ id: targetId, position: 'before' })
+      } else {
+        setDropTarget({ id: targetId, position: 'after' })
+      }
+    }
+  }
+
+  /**
+   * タッチ終了時の処理
+   */
+  const handleTouchEnd = () => {
+    // 長押しタイマーをクリア
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current)
+      longPressTimer.current = null
+    }
+
+    // ドラッグ中だった場合はドロップ処理
+    if (isDraggingTouch.current && draggedItem && dropTarget) {
+      if (dropTarget.position === 'inside' && dropTarget.id) {
+        onMoveItem(draggedItem, dropTarget.id)
+      } else {
+        onMoveItem(draggedItem, null)
+      }
+    }
+
+    // 状態をリセット
+    isDraggingTouch.current = false
+    setDraggedItem(null)
+    setDropTarget(null)
+  }
+
   const editingLayer = editingLayerId ? allLayers.find((layer) => layer.id === editingLayerId) : null
 
   return (
@@ -222,7 +332,10 @@ const LayerPanel = ({
           </button>
         )}
       </header>
-      <p className="layer-panel__meta">{allLayers.length} 件・フィーチャ {totalFeatures} 個</p>
+      <p className="layer-panel__meta">
+        {allLayers.length} 件・フィーチャ {totalFeatures} 個
+        <span className="layer-panel__hint">（長押しでドラッグ）</span>
+      </p>
 
       <div className="layer-panel__adder">
         <select 
@@ -246,19 +359,27 @@ const LayerPanel = ({
         </button>
       </div>
 
-      <div className="layer-tree" role="tree">
+      <div 
+        className="layer-tree" 
+        role="tree"
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
         {flatItems.map((item) => (
           <div
             key={item.id}
-            className={`layer-tree__item ${item.type === 'layer' && item.id === activeLayerId ? 'is-active' : ''} ${
+            className={`layer-tree__item ${item.type === 'node' && expandedNodes.has(item.id) ? 'layer-tree__item--expanded' : ''} ${item.type === 'layer' && item.id === activeLayerId ? 'is-active' : ''} ${
               draggedItem === item.id ? 'is-dragging' : ''
             } ${dropTarget?.id === item.id ? `drop-${dropTarget.position}` : ''}`}
-            style={{ paddingLeft: `${item.level * 1.5}rem` }}
+            style={{ paddingLeft: `${item.level * 1}rem` }}
+            data-item-id={item.id}
+            data-item-type={item.type}
             draggable
             onDragStart={(e) => handleDragStart(e, item.id)}
             onDragOver={(e) => handleDragOver(e, item.id, item.type)}
             onDrop={handleDrop}
             onDragEnd={handleDragEnd}
+            onTouchStart={(e) => handleTouchStart(e, item.id)}
             role="treeitem"
           >
             <div 
@@ -279,7 +400,6 @@ const LayerPanel = ({
                   }}
                   aria-label={expandedNodes.has(item.id) ? '折りたたむ' : '展開'}
                 >
-                  {expandedNodes.has(item.id) ? '▼' : '▶'}
                 </button>
               )}
               
@@ -295,9 +415,44 @@ const LayerPanel = ({
                 />
               </label>
 
-              <span className={`layer-tree__icon ${item.type === 'node' ? 'is-node' : 'is-layer'}`}>
-                {item.type === 'node' ? '📁' : '🗺️'}
-              </span>
+              {item.type === 'node' ? (
+                <span className="layer-tree__icon is-node">📁</span>
+              ) : (
+                <svg 
+                  className="layer-tree__icon is-layer"
+                  width="16" 
+                  height="16" 
+                  viewBox="0 0 16 16"
+                  aria-label="レイヤースタイル"
+                >
+                  <line
+                    x1="2"
+                    y1="8"
+                    x2="14"
+                    y2="8"
+                    stroke={item.style.strokeColor}
+                    strokeWidth={item.style.strokeWidth}
+                    strokeDasharray={
+                      item.style.strokeStyle === 'dashed'
+                        ? '3,2'
+                        : item.style.strokeStyle === 'dotted'
+                        ? '1,2'
+                        : '0'
+                    }
+                  />
+                  {item.style.fillColor && item.style.fillColor !== 'transparent' && (
+                    <circle
+                      cx="8"
+                      cy="8"
+                      r="3"
+                      fill={item.style.fillColor}
+                      fillOpacity={item.style.fillOpacity}
+                      stroke={item.style.strokeColor}
+                      strokeWidth="1"
+                    />
+                  )}
+                </svg>
+              )}
               
               <span className="layer-tree__name">{item.name}</span>
               

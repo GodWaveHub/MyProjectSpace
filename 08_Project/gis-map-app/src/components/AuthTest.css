@@ -1,0 +1,160 @@
+.auth-test-container {
+  max-width: 500px;
+  margin: 40px auto;
+  padding: 30px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.auth-test-container h2 {
+  text-align: center;
+  margin-bottom: 24px;
+  color: #333;
+}
+
+.error-message {
+  background: #fee;
+  color: #c33;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  border-left: 4px solid #c33;
+}
+
+.success-message {
+  background: #efe;
+  color: #3c3;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  border-left: 4px solid #3c3;
+}
+
+.user-info {
+  text-align: center;
+}
+
+.user-info h3 {
+  color: #2c3e50;
+  margin-bottom: 16px;
+}
+
+.user-info p {
+  margin: 8px 0;
+  color: #555;
+}
+
+.user-info strong {
+  color: #333;
+}
+
+.auth-forms {
+  margin-top: 20px;
+}
+
+.mode-selector {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  border-bottom: 2px solid #eee;
+}
+
+.mode-selector button {
+  flex: 1;
+  padding: 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  color: #666;
+  transition: all 0.3s;
+  border-bottom: 3px solid transparent;
+}
+
+.mode-selector button:hover {
+  color: #333;
+  background: #f8f9fa;
+}
+
+.mode-selector button.active {
+  color: #007bff;
+  border-bottom-color: #007bff;
+  font-weight: 600;
+}
+
+.form-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.input-field {
+  padding: 12px 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: border-color 0.3s;
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: #007bff;
+}
+
+.button-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: #007bff;
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #0056b3;
+}
+
+.btn-google {
+  background: #fff;
+  color: #444;
+  border: 2px solid #ddd;
+}
+
+.btn-google:hover:not(:disabled) {
+  background: #f8f9fa;
+  border-color: #4285f4;
+}
+
+.btn-danger {
+  background: #dc3545;
+  color: white;
+  margin-top: 16px;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: #c82333;
+}

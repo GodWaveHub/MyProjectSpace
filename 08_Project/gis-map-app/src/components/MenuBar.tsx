@@ -5,6 +5,7 @@
  */
 import { useRef, useState } from 'react'
 import type { ChangeEvent } from 'react'
+import type { User } from 'firebase/auth'
 
 /**
  * MenuBarコンポーネントのプロパティ
@@ -22,6 +23,9 @@ export type MenuBarProps = {
   onShowAddressSearch: () => void
   onPrint: () => void
   onShowLegend: () => void
+  user: User | null
+  onLogin: () => void
+  onLogout: () => void
 }
 
 /**
@@ -42,6 +46,9 @@ const MenuBar = ({
   onShowAddressSearch,
   onPrint,
   onShowLegend,
+  user,
+  onLogin,
+  onLogout,
 }: MenuBarProps) => {
   // メニューの開閉状態
   const [isOpen, setIsOpen] = useState(false)
@@ -111,50 +118,71 @@ const MenuBar = ({
             </div>
 
             <div className="menu-content">
+              <section className="menu-section auth-section">
+                {user ? (
+                  <>
+                    <div className="user-info-compact">
+                      <span className="user-email">👤 {user.email}</span>
+                    </div>
+                    <button type="button" onClick={() => handleMenuItemClick(onLogout)} className="logout-button">
+                      🚪 ログアウト
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <div className="auth-message">
+                      ログインが必要です
+                    </div>
+                    <button type="button" onClick={() => handleMenuItemClick(onLogin)} className="login-button">
+                      🔐 Googleでログイン
+                    </button>
+                  </>
+                )}
+              </section>
               <section className="menu-section">
                 <h4>レイヤー</h4>
-                <button type="button" onClick={() => handleMenuItemClick(onToggleLayerPanel)}>
+                <button type="button" onClick={() => handleMenuItemClick(onToggleLayerPanel)} disabled={!user}>
                   📁 レイヤーツリー表示
                 </button>
-                <button type="button" onClick={() => handleMenuItemClick(onSaveLayerList)}>
+                <button type="button" onClick={() => handleMenuItemClick(onSaveLayerList)} disabled={!user}>
                   💾 レイヤー情報保存
                 </button>
-                <button type="button" onClick={() => handleMenuItemClick(triggerLayerListImport)}>
+                <button type="button" onClick={() => handleMenuItemClick(triggerLayerListImport)} disabled={!user}>
                   📂 レイヤー情報読み込み
                 </button>
-                <button type="button" onClick={() => handleMenuItemClick(onLoadGeoJson)}>
+                <button type="button" onClick={() => handleMenuItemClick(onLoadGeoJson)} disabled={!user}>
                   📥 GeoJSON読込
                 </button>
-                <button type="button" onClick={() => handleMenuItemClick(onSaveGeoJson)}>
+                <button type="button" onClick={() => handleMenuItemClick(onSaveGeoJson)} disabled={!user}>
                   📤 GeoJSON保存
                 </button>
-                <button type="button" onClick={() => handleMenuItemClick(onClearLayer)}>
+                <button type="button" onClick={() => handleMenuItemClick(onClearLayer)} disabled={!user}>
                   🗑️ レイヤークリア
                 </button>
-                <button type="button" onClick={() => handleMenuItemClick(onLoadSample)}>
+                <button type="button" onClick={() => handleMenuItemClick(onLoadSample)} disabled={!user}>
                   📋 サンプルデータ読込
                 </button>
               </section>
 
               <section className="menu-section">
                 <h4>検索</h4>
-                <button type="button" onClick={() => handleMenuItemClick(onShowBookmark)}>
+                <button type="button" onClick={() => handleMenuItemClick(onShowBookmark)} disabled={!user}>
                   🔖 ブックマーク
                 </button>
-                <button type="button" onClick={() => handleMenuItemClick(onShowCoordinateSearch)}>
+                <button type="button" onClick={() => handleMenuItemClick(onShowCoordinateSearch)} disabled={!user}>
                   🌐 緯度経度検索
                 </button>
-                <button type="button" onClick={() => handleMenuItemClick(onShowAddressSearch)}>
+                <button type="button" onClick={() => handleMenuItemClick(onShowAddressSearch)} disabled={!user}>
                   📍 住所検索
                 </button>
               </section>
 
               <section className="menu-section">
                 <h4>その他</h4>
-                <button type="button" onClick={() => handleMenuItemClick(onPrint)}>
+                <button type="button" onClick={() => handleMenuItemClick(onPrint)} disabled={!user}>
                   🖨️ 印刷
                 </button>
-                <button type="button" onClick={() => handleMenuItemClick(onShowLegend)}>
+                <button type="button" onClick={() => handleMenuItemClick(onShowLegend)} disabled={!user}>
                   📊 凡例表示
                 </button>
               </section>

@@ -139,7 +139,7 @@ i  Skipping write of dist/index.html
 
 +  Firebase initialization complete!
 ```
-### Firebase デプロイ
+### Firebase hostingにデプロイ
 ` firebase deploy `
 
 ```
@@ -164,9 +164,20 @@ Hosting URL: https://skilful-voltage-171914.web.app
 ### 非公開とするとき①
 ` firebase hosting:disable `
 
-` firebase deploy `
+` firebase deploy --only hosting `
 
 ### 非公開とするとき②
 ` firebase deploy --only hosting --public maintenance `
 
 ` firebase deploy --only hosting `
+
+### Firebase Authenticationを導入
+#### Firebase コンソールで認証をONとしてgoogle 認証を有効化
+ - Firebaseコンソール > Authentication > サインイン方法 > Google を有効化
+#### Firebase コンソールでWebアプリを登録
+ - Firebaseコンソール > プロジェクトの概要 > アプリを追加 > Webアプリを選択
+ - 登録後に表示されるFirebase SDKの設定情報を.env.localに追記
+#### Firebase SDKのインストール
+` npm install firebase `
+実装をcopilotに依頼して実装を進める
+
